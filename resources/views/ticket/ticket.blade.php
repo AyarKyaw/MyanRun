@@ -123,10 +123,10 @@
                         class="flex-1 py-3 rounded-[1.5rem] text-xs font-black uppercase tracking-widest transition-all duration-300 bg-[#C3E92D] text-slate-900">
                         National
                     </button>
-                    <button type="button" id="btn-foreign" onclick="updatePricing('foreign')" 
+                  <button type="button" id="btn-foreign" onclick="updatePricing('foreign')" 
                         class="flex-1 py-3 rounded-[1.5rem] text-xs font-black uppercase tracking-widest transition-all duration-300 text-[#C3E92D] hover:opacity-80">
                         Foreigner
-                    </button>
+                    </button> 
                 </div>
             </header>
 

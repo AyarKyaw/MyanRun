@@ -11,3 +11,10 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
+/public/uploads/
+
+# Local/server/debug files
+info.php
+public/info.php
+index.nginx-debian.html
+*.save

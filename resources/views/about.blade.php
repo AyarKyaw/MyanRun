@@ -91,7 +91,7 @@
                                 </defs>
                             </svg>
                                               <div class="content-counter">
-    <div class="numb-count">523</div>
+    <div class="numb-count">43</div>
     <div class="name-count">Awards given</div>
 </div>
 
@@ -110,7 +110,7 @@
                                     fill="#5E6267" />
                             </svg>
                         <div class="content-counter">
-                       <div class="numb-count">21,200</div>
+                       <div class="numb-count">22,900</div>
                      <div class="name-count">followers</div>
                         </div>
 
@@ -132,7 +132,7 @@
                                     fill="#5E6267" />
                             </svg>
                             <div class="content-counter">
-    <div class="numb-count">27</div>
+    <div class="numb-count">28</div>
     <div class="name-count">Events Organised</div>
 </div>
 
@@ -168,7 +168,7 @@
                                 </defs>
                             </svg>
                            <div class="content-counter">
-    <div class="numb-count">165,429</div>
+    <div class="numb-count">177,339</div>
     <div class="name-count">Miles Run</div>
 </div>
 

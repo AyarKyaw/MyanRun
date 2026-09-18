@@ -17,4 +17,14 @@ class EventTicketType extends Model
     {
         return $this->belongsTo(Event::class);
     }
+
+    public function promoCodes(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            PromoCode::class,
+            'promo_code_event_ticket_type',
+            'event_ticket_type_id',
+            'promo_code_id'
+        );
+    }
 }

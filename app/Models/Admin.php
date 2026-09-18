@@ -52,7 +52,7 @@ class Admin extends Authenticatable
     {
         return $this->role === 'finance_admin';
     }
-
+    
     public function isSupporter() {
         return $this->role === 'supporter';
     }

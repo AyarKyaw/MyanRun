@@ -22,6 +22,7 @@ use App\Models\SponsorCode;
 use App\Http\Controllers\AgentController;
 use App\Http\Controllers\Admin\AdminManagementController;
 use App\Http\Controllers\Admin\RaceController;
+use App\Http\Controllers\PromoCodeController;
 /*
 |--------------------------------------------------------------------------
 | Public Routes
@@ -384,4 +385,18 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::delete('/races/cards/{id}', [RaceController::class, 'destroyCard'])->name('races.card.destroy'); // <-- Added for single card removal
 
     // Your remaining admin routes live safely here...
+});
+
+Route::post('/apply-promo', [PromoCodeController::class, 'apply'])->name('promo.apply');
+
+Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(function () {
+    // Specific promo code routes (must be defined BEFORE wildcard {id})
+    Route::get('/promo-codes', [PromoCodeController::class, 'index'])->name('promo_codes.index');
+    Route::get('/promo-codes/create', [PromoCodeController::class, 'create'])->name('promo_codes.create');
+    Route::post('/promo-codes', [PromoCodeController::class, 'store'])->name('promo_codes.store');
+    Route::get('/promo-codes/export-group', [PromoCodeController::class, 'exportGroup'])->name('promo_codes.export_group');
+    Route::delete('/promo-codes/destroy-group', [PromoCodeController::class, 'destroyGroup'])->name('promo_codes.destroy_group');
+    
+    // Dynamic parameter route
+    Route::delete('/promo-codes/{id}', [PromoCodeController::class, 'destroy'])->name('promo_codes.destroy');
 });

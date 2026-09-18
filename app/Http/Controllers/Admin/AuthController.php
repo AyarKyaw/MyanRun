@@ -38,6 +38,10 @@ class AuthController extends Controller
                 return redirect()->route('dashboard.tickets.index');
             }
 
+            if ($admin->isSupportAgent()) {
+                return redirect()->route('dashboard.tickets.index');
+            }
+
             // 2. Finance Admins -> Dashboard (They will see all events + money)
             if ($admin->isFinanceAdmin()) {
                 return redirect()->route('dashboard.tickets.index');

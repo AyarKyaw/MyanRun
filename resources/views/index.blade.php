@@ -30,7 +30,7 @@
                                 <img src="{{ asset('images/logo/RUNderful Myanmar Logo.png') }}" alt="Logo" />
                             </div>
                              <span class="new-event">new Event </span>
-                            <img src="{{ asset('images/logo/myarun(logo).jpg') }}" alt="image event" class="new-event">
+                            <img src="storage/events/J6FjN3b2fkWjpLpslVWN1NwmdFgKY0mah4QdXc6d.jpg" alt="image event" class="new-event">
                             <div class="content-event">
                                 <h2 class="title-event"><a href="/event" class="">Join Our Event</a>
                                 </h2>
@@ -44,9 +44,9 @@
                                                     fill="#C3E92D" />
                                             </svg>
                                         </span>
-                                        <a href="/event">Cherry Trail RUN 2026</a>
+                                        <a href="/event">Bagan Marathon 2026</a>
                                     </li>
-                                    <li>
+                                   <!--  <li>
                                         <span class="icon-new">
                                             <svg width="14" height="16" viewBox="0 0 14 16" fill="none"
                                                 xmlns="http://www.w3.org/2000/svg">
@@ -56,7 +56,7 @@
                                             </svg>
                                         </span>
                                         <a href="/event">Alaingni Monsoon Duathlon 2026</a>
-                                    </li>
+                                    </li> -->
                                     <!-- <li>
                                         <span class="icon-new">
                                             <svg width="13" height="16" viewBox="0 0 13 16" fill="none"
@@ -100,7 +100,7 @@
                                 <img src="{{ asset('images/logo/RUNderful Myanmar Logo.png') }}" alt="Logo" />
                             </div>
                              <span class="new-event">new Event </span>
-                            <img src="{{ asset('images/logo/myarun(logo).jpg') }}" alt="image event" class="new-event">
+                            <img src="storage/events/J6FjN3b2fkWjpLpslVWN1NwmdFgKY0mah4QdXc6d.jpg" alt="image event" class="new-event">
                             <div class="content-event">
                                 <h2 class="title-event"><a href="/event" class="">Join Our Event</a>
                                 </h2>
@@ -114,9 +114,9 @@
                                                     fill="#C3E92D" />
                                             </svg>
                                         </span>
-                                        <a href="/event">Cherry Trail RUN 2026</a>
+                                        <a href="/event">Bagan Marathon 2026</a>
                                     </li>
-                                    <li>
+                                    <!-- <li>
                                         <span class="icon-new">
                                             <svg width="14" height="16" viewBox="0 0 14 16" fill="none"
                                                 xmlns="http://www.w3.org/2000/svg">
@@ -126,7 +126,7 @@
                                             </svg>
                                         </span>
                                         <a href="/event">Alaingni Monsoon Duathlon 2026</a>
-                                    </li>
+                                    </li> -->
                                     <!-- <li>
                                         <span class="icon-new">
                                             <svg width="13" height="16" viewBox="0 0 13 16" fill="none"
@@ -169,7 +169,7 @@
                                 <img src="{{ asset('images/logo/RUNderful Myanmar Logo.png') }}" alt="Logo" />
                             </div>
                              <span class="new-event">new Event </span>
-                            <img src="{{ asset('images/logo/myarun(logo).jpg') }}" alt="image event" class="new-event">
+                            <img src="storage/events/J6FjN3b2fkWjpLpslVWN1NwmdFgKY0mah4QdXc6d.jpg" alt="image event" class="new-event">
                             <div class="content-event">
                                 <h2 class="title-event"><a href="/event" class="">Join Our Event</a>
                                 </h2>
@@ -183,9 +183,9 @@
                                                     fill="#C3E92D" />
                                             </svg>
                                         </span>
-                                        <a href="/event">Cherry Trail RUN 2026</a>
+                                        <a href="/event">Bagan Marathon 2026</a>
                                     </li>
-                                    <li>
+                                   <!--  <li>
                                         <span class="icon-new">
                                             <svg width="14" height="16" viewBox="0 0 14 16" fill="none"
                                                 xmlns="http://www.w3.org/2000/svg">
@@ -195,7 +195,7 @@
                                             </svg>
                                         </span>
                                         <a href="/event">Alaingni Monsoon Duathlon 2026</a>
-                                    </li>
+                                    </li> -->
                                     <!-- <li>
                                         <span class="icon-new">
                                             <svg width="13" height="16" viewBox="0 0 13 16" fill="none"
@@ -238,7 +238,7 @@
                                 <img src="{{ asset('images/logo/RUNderful Myanmar Logo.png') }}" alt="Logo" />
                             </div>
                              <span class="new-event">new Event </span>
-                            <img src="{{ asset('images/logo/myarun(logo).jpg') }}" alt="image event" class="new-event">
+                            <img src="storage/events/J6FjN3b2fkWjpLpslVWN1NwmdFgKY0mah4QdXc6d.jpg" alt="image event" class="new-event">
                             <div class="content-event">
                                 <h2 class="title-event"><a href="/event" class="">Join Our Event</a>
                                 </h2>
@@ -252,9 +252,9 @@
                                                     fill="#C3E92D" />
                                             </svg>
                                         </span>
-                                        <a href="/event">Cherry Trail RUN 2026</a>
+                                        <a href="/event">Bagan Marathon 2026</a>
                                     </li>
-                                    <li>
+                                    <!-- <li>
                                         <span class="icon-new">
                                             <svg width="14" height="16" viewBox="0 0 14 16" fill="none"
                                                 xmlns="http://www.w3.org/2000/svg">
@@ -264,7 +264,7 @@
                                             </svg>
                                         </span>
                                         <a href="/event">Alaingni Monsoon Duathlon 2026</a>
-                                    </li>
+                                    </li> -->
                                     <!-- <li>
                                         <span class="icon-new">
                                             <svg width="13" height="16" viewBox="0 0 13 16" fill="none"
@@ -285,7 +285,7 @@
             </div>
             <div class="tf-banner swiper-slide">
                 <div class="image-slider">
-                    <img src="{{ asset('images/home_banner/Home Banner (3).JPG') }}" alt="image" />
+                    <img src="{{ asset('images/home_banner/home(2).jpg') }}" alt="image" />
                     <div class="overlay"></div>
                 </div>
                 <div class="themeflat-container">
@@ -308,7 +308,7 @@
                                 <img src="{{ asset('images/logo/RUNderful Myanmar Logo.png') }}" alt="Logo" />
                             </div>
                             <span class="new-event">new Event </span>
-                            <img src="{{ asset('images/logo/myarun(logo).jpg') }}" alt="image event" class="new-event">
+                            <img src="storage/events/J6FjN3b2fkWjpLpslVWN1NwmdFgKY0mah4QdXc6d.jpg" alt="image event" class="new-event">
                             <div class="content-event">
                                 <h2 class="title-event"><a href="/event" class="">Join Our Event</a>
                                 </h2>
@@ -322,9 +322,9 @@
                                                     fill="#C3E92D" />
                                             </svg>
                                         </span>
-                                        <a href="/event">Cherry Trail RUN 2026</a>
+                                        <a href="/event">Bagan Marathon 2026</a>
                                     </li>
-                                    <li>
+                                   <!--  <li>
                                         <span class="icon-new">
                                             <svg width="14" height="16" viewBox="0 0 14 16" fill="none"
                                                 xmlns="http://www.w3.org/2000/svg">
@@ -333,8 +333,8 @@
                                                     fill="#C3E92D" />
                                             </svg>
                                         </span>
-                                        <a href="/event">Alaingni Monsoon Duathlon 2026</a>
-                                    </li>
+                                        <!-- <a href="/event">Alaingni Monsoon Duathlon 2026</a> -->
+                                    </li> -->
                                     <!-- <li>
                                         <span class="icon-new">
                                             <svg width="13" height="16" viewBox="0 0 13 16" fill="none"
@@ -642,7 +642,7 @@
                 <div class="item wow fadeInUp animated">
                     <div class="event-infomation">
                         <div class="info">
-                            <h4><a href="event-details.html">15 KM (Bike) to 5 KM (RUN) Amateur (Local)</a></h4>
+                            <h4><a href="/event">10 KM (Local)</a></h4>
                             <p>
                                 <span>
                                     <svg width="18" height="20" viewBox="0 0 18 20" fill="none"
@@ -677,12 +677,12 @@
                                
                             </p>
                         </div>
-                        <img decoding="async" src="{{ asset('images/local/AmateurLocal.jpg') }}" style="width:100%; height:500px; object-fit:cover; object-position: 20% center;"alt="denpasar marathon event 2023">
+                        <img decoding="async" src="storage/tickets/display/THMnm3oQjbOgmuBVZzz4fxYVOwuxjjshfQWNMTkz.jpg" style="width:100%; height:500px; object-fit:cover; object-position: 20% center;"alt="denpasar marathon event 2023">
                     </div>
                     <div class="tf-info-price">
                         <h4>Ticket</h4>
                         <p class="price">
-                            <span style="">120,000 MMK</span><br>
+                            <span style="">150,000 MMK</span><br>
                             <!-- <span style="font-size:22px; font-weight:bold; color:#C3E92D;">100,000 MMK</span><br>
                             <small style="color:#ff5252; font-weight:600;">Early Bird Sale</small> -->
                         </p>
@@ -695,7 +695,7 @@
                 <div class="item wow fadeInUp animated">
                     <div class="event-infomation">
                         <div class="info">
-                            <h4><a href="event-details.html">30 KM (Bike) to 10 KM (RUN) Advanced (Local)</a></h4>
+                            <h4><a href="/event">21 KM(Local)</a></h4>
                             <p>
                                 <span>
                                     <svg width="18" height="20" viewBox="0 0 18 20" fill="none"
@@ -730,12 +730,12 @@
                                
                             </p>
                         </div>
-                        <img decoding="async" src="{{ asset('images/local/Slocal.jpg') }}"style="width:100%; height:500px; object-fit:cover; object-position: 10% center;" alt="denpasar marathon event 2023">
+                        <img decoding="async" src="storage/tickets/display/RtQe7zcAojo47pw7Z5dUWGw3LuVUR95VhDFtqXha.jpg"style="width:100%; height:500px; object-fit:cover; object-position: 10% center;" alt="denpasar marathon event 2023">
                     </div>
                     <div class="tf-info-price">
                         <h4>Ticket</h4>
                         <p class="price">
-                            <span style="">150,000 MMK</span><br>
+                            <span style="">170,000 MMK</span><br>
                         </p>
                        <a href="/event" target="_blank" class="flat-button">BUY NOW</a>
                         <div class="item-event-price-bg">
@@ -746,7 +746,7 @@
                 <div class="item wow fadeInUp animated">
                     <div class="event-infomation">
                         <div class="info">
-                            <h4><a href="event-details.html">30 KM (Bike) to 10 KM (RUN) Relay (Local)</a></h4>
+                            <h4><a href="/event">42 KM  (Local)</a></h4>
                             <p>
                                 <span>
                                     <svg width="18" height="20" viewBox="0 0 18 20" fill="none"
@@ -781,12 +781,12 @@
                                
                             </p>
                         </div>
-                        <img decoding="async" src="{{ asset('images/local/Rlocal.jpg') }}"style="width:100%; height:500px; object-fit:cover; object-position: 10% center;" alt="denpasar marathon event 2023">
+                        <img decoding="async" src="storage/tickets/display/gKXvlcf3Wa3SNO2lxvUqpmcfgSu0WuCgYfV48B9K.jpg"style="width:100%; height:500px; object-fit:cover; object-position: 10% center;" alt="denpasar marathon event 2023">
                     </div>
                     <div class="tf-info-price">
                         <h4>Ticket</h4>
                         <p class="price">
-                            <span style="">240,000 MMK</span><br>
+                            <span style="">190,000 MMK</span><br>
                         </p>
                        <a href="/event" target="_blank" class="flat-button">BUY NOW</a>
                         <div class="item-event-price-bg">
@@ -794,7 +794,7 @@
                     </div>
                     <div class="bg-item-event-2"></div>
                 </div>
-                <div class="item wow fadeInUp animated">
+                <!-- <div class="item wow fadeInUp animated">
                     <div class="event-infomation">
                         <div class="info">
                             <h4><a href="event-details.html">15 KM (Bike) to 5 KM (RUN) Amateur (Foreigner)</a></h4>
@@ -946,7 +946,7 @@
                         </div>
                     </div>
                     <div class="bg-item-event-2"></div>
-                </div>
+                </div> -->
                 </div>
             </div>
         </div>
@@ -1805,13 +1805,13 @@
             <div class="modal-content marathon-modal">
                 
                 <!-- Close -->
-                <button type="button" class="btn-close marathon-close"
+                <button type="button" class="btn-close marathon-close btn-close-white"
                 data-bs-dismiss="modal" aria-label="Close"></button>
                 
                 <div class="marathon-body">
                     
                     <div class="marathon-image">
-                      <img src="{{ asset('images/MYAN RUN - POPUP.png') }}" alt="Myanrun">
+                      <img src="storage/events/J6FjN3b2fkWjpLpslVWN1NwmdFgKY0mah4QdXc6d.jpg" alt="Myanrun">
                     </div>
         <!-- LEFT TEXT -->
         <div class="marathon-text">

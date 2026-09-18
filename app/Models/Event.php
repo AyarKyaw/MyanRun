@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany; // <--- Add this import
 
 class Event extends Model
 {
@@ -50,8 +51,12 @@ class Event extends Model
     ];
 
     public function registrations()
-{
-    // Pointing to the event_id foreign key for better database indexing
-    return $this->hasMany(Ticket::class, 'event_id'); 
-}
+    {
+        return $this->hasMany(Ticket::class, 'event_id'); 
+    }
+
+    public function eventTicketTypes(): HasMany
+    {
+        return $this->hasMany(EventTicketType::class, 'event_id');
+    }
 }

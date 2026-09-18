@@ -112,14 +112,14 @@ class TicketController extends Controller
         ];
 
         if (!$isSupporter) {
-            $counts['all'] = (clone $baseQuery)->distinct()->count('bib_number');
-            $counts['pending'] = (clone $baseQuery)->where('status', 'pending')->distinct()->count('bib_number');
-            $counts['rejected'] = (clone $baseQuery)->where('status', 'rejected')->distinct()->count('bib_number');
+            $counts['all'] = (clone $baseQuery)->count();
+            $counts['pending'] = (clone $baseQuery)->where('status', 'pending')->count();
+            $counts['rejected'] = (clone $baseQuery)->where('status', 'rejected')->count();
         }
 
         $eventTickets = \App\Models\Ticket::where('event', $eventName);
         // 1. Total Approved
-        $totalApproved = (clone $eventTickets)->where('status', 'approved')->distinct()->count('bib_number');
+       $totalApproved = (clone $eventTickets)->where('status', 'approved')->count();
 
         // 2. Total Printed (is_printed should be 1 or true)
         $totalPrinted = (clone $eventTickets)->where('status', 'approved')->where('is_printed', 1)->count();
@@ -244,7 +244,7 @@ class TicketController extends Controller
 
     // 3. Map variables
     $id_doc      = $athlete->id_number ?? 'N/A';
-    $fullName    = trim("{$user->first_name} {$user->mid_name} {$user->last_name}");
+    $fullName    = trim("{$user->first_name} {$user->middle_name} {$user->last_name}");
     $bibName     = $ticket->bib_name ?? 'N/A';
     $bibNumber   = $ticket->bib_number ?? '0000';
     $category    = $ticketType->name ?? 'N/A';
@@ -273,7 +273,7 @@ class TicketController extends Controller
     // Normalize slashes for Windows
     $templatePath = public_path(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $relativePath));
 
-    $fontPath = public_path('assets/fonts/arial.ttf');
+    $fontPath = public_path('assets/fonts/pyidaungsu.ttf');
     $logoPath = public_path('images/myan_logo.jpg');
 
     if (!\Illuminate\Support\Facades\File::exists($templatePath)) {
@@ -295,46 +295,67 @@ class TicketController extends Controller
     $white = \imagecolorallocate($image, 255, 255, 255);
     
     // 6. Drawing & QR Code
-    if (\Illuminate\Support\Facades\File::exists($fontPath)) {
-        \imagettftext($image, 20, 0, 980, 45, $white, $fontPath, str_pad($ticket->id, 5, '0', STR_PAD_LEFT));
-        \imagettftext($image, 22, 0, 980, 90, $white, $fontPath, strtoupper($bibName));
-        \imagettftext($image, 22, 0, 1020, 155, $white, $fontPath, $bibNumber);
+   if (\Illuminate\Support\Facades\File::exists($fontPath)) {
+    // Color setup (Dark text matches the labels, White for contrast if needed)
+    $darkColor = \imagecolorallocate($image, 20, 20, 20); 
 
-        $qrSize = 150;
-        $qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size={$qrSize}x{$qrSize}&ecc=H&data=" . urlencode($qrContent);
-        
-        $ctx = stream_context_create(['http' => ['timeout' => 5]]);
-        $qrCodeRaw = @file_get_contents($qrUrl, false, $ctx);
-        
-        if ($qrCodeRaw) {
-            $qrCodeImage = \imagecreatefromstring($qrCodeRaw);
-            if ($qrCodeImage) {
-                if (\Illuminate\Support\Facades\File::exists($logoPath)) {
-                    $logo = @\imagecreatefromjpeg($logoPath);
-                    if ($logo) {
-                        $qrWidth = \imagesx($qrCodeImage); $qrHeight = \imagesy($qrCodeImage);
-                        $logoWidth = \imagesx($logo); $logoHeight = \imagesy($logo);
-                        $logoTargetWidth = $qrWidth * 0.22;
-                        $logoTargetHeight = $logoHeight * ($logoTargetWidth / $logoWidth);
-                        $dstX = ($qrWidth - $logoTargetWidth) / 2;
-                        $dstY = ($qrHeight - $logoTargetHeight) / 2;
-                        \imagefilledrectangle($qrCodeImage, $dstX - 2, $dstY - 2, $dstX + $logoTargetWidth + 2, $dstY + $logoTargetHeight + 2, $white);
-                        \imagecopyresampled($qrCodeImage, $logo, $dstX, $dstY, 0, 0, $logoTargetWidth, $logoTargetHeight, $logoWidth, $logoHeight);
-                        \imagedestroy($logo);
-                    }
+    // 1. Position Adjustments (Shifted right and scaled up to fit the template layout)
+    $valueX     = 1320; // X position to align values right after the printed labels
+    $fontSize   = 24;   // Larger font size
+    $lineHeight = 70;   // Spacing to align with template label rows
+    $startY     = 55;   // Top margin for the first value (Name)
+
+    // 1. Name Value
+    \imagettftext($image, $fontSize, 0, $valueX, $startY, $darkColor, $fontPath, $fullName);
+
+    // 2. Ticket ID / Reg.No Value
+    $regNo = str_pad($ticket->id, 5, '0', STR_PAD_LEFT);
+    \imagettftext($image, $fontSize, 0, $valueX, $startY + ($lineHeight * 1), $darkColor, $fontPath, $regNo);
+
+    // 3. Bib Name Value
+    \imagettftext($image, $fontSize, 0, $valueX, $startY + ($lineHeight * 2), $darkColor, $fontPath, strtoupper($bibName));
+
+    // 4. ID Number / Passport Value
+    \imagettftext($image, 20, 0, $valueX, $startY + ($lineHeight * 3), $darkColor, $fontPath, $id_doc);
+
+    // 2. QR Code Setup (Scaled up and centered inside the white box)
+    $qrSize = 220; 
+    $qrX    = 1260; 
+    $qrY    = 490; 
+
+    $qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size={$qrSize}x{$qrSize}&ecc=H&data=" . urlencode($qrContent);
+
+    $ctx = stream_context_create(['http' => ['timeout' => 5]]);
+    $qrCodeRaw = @file_get_contents($qrUrl, false, $ctx);
+
+    if ($qrCodeRaw) {
+        $qrCodeImage = \imagecreatefromstring($qrCodeRaw);
+        if ($qrCodeImage) {
+            if (\Illuminate\Support\Facades\File::exists($logoPath)) {
+                $logo = @\imagecreatefromjpeg($logoPath);
+                if ($logo) {
+                    $qrWidth = \imagesx($qrCodeImage); $qrHeight = \imagesy($qrCodeImage);
+                    $logoWidth = \imagesx($logo); $logoHeight = \imagesy($logo);
+                    $logoTargetWidth = $qrWidth * 0.22;
+                    $logoTargetHeight = $logoHeight * ($logoTargetWidth / $logoWidth);
+                    $dstX = ($qrWidth - $logoTargetWidth) / 2;
+                    $dstY = ($qrHeight - $logoTargetHeight) / 2;
+                    \imagefilledrectangle($qrCodeImage, $dstX - 2, $dstY - 2, $dstX + $logoTargetWidth + 2, $dstY + $logoTargetHeight + 2, $white);
+                    \imagecopyresampled($qrCodeImage, $logo, $dstX, $dstY, 0, 0, $logoTargetWidth, $logoTargetHeight, $logoWidth, $logoHeight);
+                    \imagedestroy($logo);
                 }
-                \imagecopy($image, $qrCodeImage, 950, 200, 0, 0, $qrSize, $qrSize);
-                \imagedestroy($qrCodeImage);
             }
+            \imagecopy($image, $qrCodeImage, $qrX, $qrY, 0, 0, $qrSize, $qrSize);
+            \imagedestroy($qrCodeImage);
         }
     }
+}
 
     return response()->streamDownload(function () use ($image) {
         \imagepng($image);
         \imagedestroy($image);
     }, "MyanRun_{$bibNumber}.png", ['Content-Type' => 'image/png']);
 }
-
     public function previewPDF($id) 
     {
         $data = $this->getTicketData($id);
@@ -373,174 +394,209 @@ class TicketController extends Controller
         return Excel::download(new TicketExport($category, $status, $printStatus, $eventId), $fileName);
     }
 
-    public function initiatePayment($id)
-    {
-        // 1. DATABASE CHECK FIRST (The "Resume" Path)
-        // $id is the runner_id passed from the URL
-        $athlete = \App\Models\Athlete::where('runner_id', $id)->first();
-        
-        if (!$athlete) {
-            return redirect()->route('public.events')->with('error', 'Athlete profile not found.');
+    public function initiatePayment(Request $request, $id)
+{
+    // 1. ATHLETE CHECK
+    $athlete = \App\Models\Athlete::where('runner_id', $id)->first();
+    
+    if (!$athlete) {
+        return redirect()->route('public.events')->with('error', 'Athlete profile not found.');
+    }
+
+    // Read current registration from session
+    $order = session('pending_registration');
+
+    if (!$order || !isset($order['athlete_id']) || !isset($order['event_id'])) {
+        return redirect()->route('athlete.register')->with('error', 'Session expired. Please restart registration.');
+    }
+
+    $eventId = $order['event_id'];
+
+    // 2. DISCOUNT & PROMO CALCULATIONS
+    $ticketType = \App\Models\EventTicketType::with('event')->find($order['ticket_type_id']);
+    $eventModel = \App\Models\Event::find($eventId);
+    $eventName  = $eventModel->name;
+
+    // Early Bird Check
+    $totalEventRegistrations = \App\Models\Ticket::whereHas('ticketType', function($query) use ($eventModel) {
+            $query->where('event_id', $eventModel->id);
+        })->where('status', '!=', 'rejected')->count();
+
+    $discountAmount = 0;
+    if ($eventModel->early_bird_limit > 0 && $totalEventRegistrations < $eventModel->early_bird_limit) {
+        $discountAmount = (float)($ticketType->early_bird_discount ?? 0);
+    }
+
+    // Promo Code Check
+    $appliedPromo  = session('applied_promo');
+    $promoDiscount = $appliedPromo ? (float)$appliedPromo['discount'] : 0;
+    $promoCode     = $appliedPromo['code'] ?? $request->input('promo_code');
+
+    // Calculate final amount floor
+    $basePrice        = (float)str_replace(',', '', $order['price']);
+    $calculatedAmount = $basePrice - $discountAmount - $promoDiscount;
+    $finalAmount      = (int)max(0, $calculatedAmount);
+
+    // 3. FIND PENDING TICKET SPECIFIC TO THIS EVENT ONLY
+    $ticket = \App\Models\Ticket::where('athlete_id', $athlete->id)
+        ->where('event_id', $eventId) // <--- CRITICAL FIX: Scope to current event
+        ->where('status', 'pending')
+        ->latest() 
+        ->first();
+
+    if ($ticket) {
+        // UPDATE existing pending ticket for THIS event with new promo/price
+        $ticket->update([
+            'price'      => $finalAmount,
+            'promo_code' => $promoCode,
+            'status'     => ($finalAmount === 0) ? 'approved' : 'pending',
+        ]);
+    } else {
+        // --- ENFORCE LIMIT CHECK ---
+        $totalLimit = $eventModel->total_max_slots;
+        $soldCount  = \App\Models\Ticket::where('event', $eventName)
+            ->whereIn('status', ['pending', 'confirmed', 'approved'])
+            ->distinct('bib_number')->count('bib_number');
+
+        if (!is_null($totalLimit) && $soldCount >= $totalLimit) {
+            return redirect()->route('public.events')->with('error', "Event is full.");
         }
 
-        // Try to find an existing pending ticket to resume payment
-        $ticket = \App\Models\Ticket::where('athlete_id', $athlete->id)
-            ->where('status', 'pending')
-            ->latest() 
-            ->first();
+        $method           = session('payment_method');
+        $registrationType = strtolower(session('ticket_type'));
+        $friendUserId     = session('friend_user_id');
+        $friendReg        = session('friend_registration');
 
-        // 2. SESSION CHECK (The "New Registration" Path)
-        // Only run this if we DID NOT find a ticket in the database
-        if (!$ticket) {
-            $order = session('pending_registration');
-            $method = session('payment_method');
-            $registrationType = strtolower(session('ticket_type'));
-            $friendUserId = session('friend_user_id');
-            $friendReg = session('friend_registration');
+        $generatedBib = $this->generateBib($order['event_id'], $order['ticket_type_id'], $athlete->gender);
 
-            // If no ticket in DB AND no session, the user is lost
-            if (!$order || !isset($order['athlete_id']) || !isset($order['event_id'])) {
-                return redirect()->route('athlete.register')->with('error', 'Session expired. Please restart registration.');
-            }
+        // CREATE CAPTAIN TICKET
+        $ticket = \App\Models\Ticket::create([
+            'athlete_id'       => $order['athlete_id'],
+            'event_id'         => $order['event_id'],
+            'ticket_type_id'   => $order['ticket_type_id'],
+            'bib_name'         => $order['bib_name'],
+            'bib_number'       => $generatedBib,
+            'category'         => $order['category'],
+            'price'            => $finalAmount,
+            'event'            => $eventName,
+            't_shirt_size'     => $order['t_shirt_size'] ?? 'M',
+            'experience_level' => $order['exp_level'] ?? 'Beginner',
+            'payment_method'   => $method,
+            'promo_code'       => $promoCode,
+            'status'           => ($finalAmount === 0) ? 'approved' : 'pending',
+        ]);
 
-            // Fetch Models for new registration
-            $ticketType = \App\Models\EventTicketType::with('event')->find($order['ticket_type_id']);
-            $eventModel = \App\Models\Event::find($order['event_id']);
-            $eventName = $eventModel->name;
-
-            // --- ENFORCE LIMIT CHECK ---
-            $totalLimit = $eventModel->total_max_slots;
-            $soldCount = \App\Models\Ticket::where('event', $eventName)
-                ->whereIn('status', ['pending', 'confirmed', 'approved'])
-                ->distinct('bib_number')->count('bib_number');
-
-            if (!is_null($totalLimit) && $soldCount >= $totalLimit) {
-                return redirect()->route('public.events')->with('error', "Event is full.");
-            }
-
-            // --- EARLY BIRD & TICKET CREATION ---
-            $totalEventRegistrations = \App\Models\Ticket::whereHas('ticketType', function($query) use ($eventModel) {
-                    $query->where('event_id', $eventModel->id);
-                })->where('status', '!=', 'rejected')->count();
-
-            $discountAmount = 0;
-            if ($eventModel->early_bird_limit > 0 && $totalEventRegistrations < $eventModel->early_bird_limit) {
-                $discountAmount = $ticketType->early_bird_discount ?? 0;
-            }
-
-            $finalAmount = (int)str_replace(',', '', $order['price']) - $discountAmount;
-            $generatedBib = $this->generateBib($order['event_id'], $order['ticket_type_id'], $athlete->gender);
-
-            // CREATE CAPTAIN TICKET
-            $ticket = \App\Models\Ticket::create([
-                'athlete_id'       => $order['athlete_id'],
-                'event_id'         => $order['event_id'],
-                'ticket_type_id'   => $order['ticket_type_id'],
-                'bib_name'         => $order['bib_name'],
-                'bib_number'       => $generatedBib,
-                'category'         => $order['category'],
-                'price'            => $finalAmount,
-                'event'            => $eventName,
-                't_shirt_size'     => $order['t_shirt_size'] ?? 'M',
-                'experience_level' => $order['exp_level'] ?? 'Beginner',
-                'payment_method'   => $method,
-                'status'           => 'pending',
-            ]);
-
-            // CREATE FRIEND TICKET (If Relay)
-            if ($registrationType === 'relay' && $friendUserId) {
-                $friendUser = \App\Models\User::find($friendUserId);
-                if ($friendUser) {
-                    $friendAthlete = \App\Models\Athlete::where('runner_id', $friendUser->runner_id)->first();
-                    if ($friendAthlete) {
-                        \App\Models\Ticket::create([
-                            'athlete_id'       => $friendAthlete->id,
-                            'bib_name'         => $friendReg['bib_name'] ?? ($friendAthlete->first_name . ' ' . $friendAthlete->last_name),
-                            'bib_number'       => $generatedBib,
-                            'category'         => $order['category'],
-                            'ticket_type_id'   => $order['ticket_type_id'],
-                            'price'            => 0,
-                            'event_id'         => $order['event_id'],
-                            'event'            => $eventName,
-                            't_shirt_size'     => $friendReg['t_shirt_size'] ?? 'M',
-                            'experience_level' => $order['exp_level'] ?? 'Beginner',
-                            'payment_method'   => $method,
-                            'status'           => 'pending',
-                        ]);
-                    }
+        // CREATE FRIEND TICKET (If Relay)
+        if ($registrationType === 'relay' && $friendUserId) {
+            $friendUser = \App\Models\User::find($friendUserId);
+            if ($friendUser) {
+                $friendAthlete = \App\Models\Athlete::where('runner_id', $friendUser->runner_id)->first();
+                if ($friendAthlete) {
+                    \App\Models\Ticket::create([
+                        'athlete_id'       => $friendAthlete->id,
+                        'bib_name'         => $friendReg['bib_name'] ?? ($friendAthlete->first_name . ' ' . $friendAthlete->last_name),
+                        'bib_number'       => $generatedBib,
+                        'category'         => $order['category'],
+                        'ticket_type_id'   => $order['ticket_type_id'],
+                        'price'            => 0,
+                        'event_id'         => $order['event_id'],
+                        'event'            => $eventName,
+                        't_shirt_size'     => $friendReg['t_shirt_size'] ?? 'M',
+                        'experience_level' => $order['exp_level'] ?? 'Beginner',
+                        'payment_method'   => $method,
+                        'status'           => ($finalAmount === 0) ? 'approved' : 'pending',
+                    ]);
                 }
             }
         }
-
-        // 3. KBZPAY PRE-CREATE (Runs for both NEW and RESUMED)
-        $finalAmount = $ticket->price; 
-        $timestamp = (string) time();
-        $nonce     = \Illuminate\Support\Str::random(32);
-        
-        // We append the timestamp to keep merch_order_id unique for KBZ
-        $orderId   = $ticket->id . '_' . $timestamp;
-
-        $signParams = [
-            'appid'          => env('KBZ_PAY_APP_ID'),
-            'merch_code'     => env('KBZ_PAY_MERCHANT_CODE'),
-            'merch_order_id' => $orderId,
-            'method'         => 'kbz.payment.precreate',
-            'nonce_str'      => $nonce,
-            'notify_url'     => env('KBZ_PAY_NOTIFY_URL'),
-            'timestamp'      => $timestamp,
-            'total_amount'   => (string)$finalAmount,
-            'trade_type'     => 'PAY_BY_QRCODE',
-            'trans_currency' => 'MMK',
-            'version'        => '1.0',
-        ];
-
-        ksort($signParams);
-        $stringA = '';
-        foreach ($signParams as $key => $value) {
-            if ($value !== "" && $value !== null) $stringA .= $key . "=" . $value . "&";
-        }
-        $stringToSign = rtrim($stringA, "&") . "&key=" . env('KBZ_PAY_APP_KEY');
-        $sign = strtoupper(hash('sha256', $stringToSign));
-
-        $payload = [
-            'Request' => [
-                'timestamp'   => $timestamp,
-                'notify_url'  => env('KBZ_PAY_NOTIFY_URL'),
-                'nonce_str'   => $nonce,
-                'sign_type'   => 'SHA256',
-                'method'      => 'kbz.payment.precreate',
-                'sign'        => $sign,
-                'version'     => '1.0',
-                'biz_content' => [
-                    'merch_order_id' => $orderId,
-                    'merch_code'     => env('KBZ_PAY_MERCHANT_CODE'),
-                    'appid'          => env('KBZ_PAY_APP_ID'),
-                    'trade_type'     => 'PAY_BY_QRCODE',
-                    'total_amount'   => (string)$finalAmount,
-                    'trans_currency' => 'MMK'
-                ]
-            ]
-        ];
-
-        try {
-            $response = \Illuminate\Support\Facades\Http::withBody(
-                json_encode($payload, JSON_UNESCAPED_SLASHES), 'application/json'
-            )->post(env('KBZ_PAY_URL'));
-
-            $result = $response->json();
-
-            if (isset($result['Response']['result']) && $result['Response']['result'] === 'SUCCESS') {
-                $qrString = $result['Response']['qrCode'];
-                return view('payment.kbz_qr', compact('qrString', 'ticket'));
-            }
-
-            return back()->with('error', 'KBZ Error: ' . ($result['Response']['msg'] ?? 'Unknown error'));
-
-        } catch (\Exception $e) {
-            \Log::error('KBZ connection error: ' . $e->getMessage());
-            return back()->with('error', 'Connection Error.');
-        }
     }
+
+    // Increment Promo Code Usage
+    if ($appliedPromo && isset($appliedPromo['id'])) {
+        \App\Models\PromoCode::where('id', $appliedPromo['id'])->update(['is_used' => 1]);
+        session()->forget('applied_promo');
+    }
+
+    // 4. ZERO-AMOUNT (FREE / 100% DISCOUNT) DIRECT APPROVAL
+    if ($finalAmount <= 0) {
+        $ticket->update(['status' => 'approved']);
+
+        \App\Models\Ticket::where('bib_number', $ticket->bib_number)
+            ->where('event_id', $ticket->event_id)
+            ->where('status', 'pending')
+            ->update(['status' => 'approved']);
+
+        session()->forget(['pending_registration', 'friend_registration', 'ticket_type', 'friend_user_id']);
+        
+        return redirect()->route('public.events')->with('success', 'Registration completed successfully!');
+    }
+
+    // 5. KBZPAY PRE-CREATE (Runs only if balance > 0)
+    $timestamp = (string) time();
+    $nonce     = \Illuminate\Support\Str::random(32);
+    $orderId   = $ticket->id . '_' . $timestamp;
+
+    $signParams = [
+        'appid'          => env('KBZ_PAY_APP_ID'),
+        'merch_code'     => env('KBZ_PAY_MERCHANT_CODE'),
+        'merch_order_id' => $orderId,
+        'method'         => 'kbz.payment.precreate',
+        'nonce_str'      => $nonce,
+        'notify_url'     => env('KBZ_PAY_NOTIFY_URL'),
+        'timestamp'      => $timestamp,
+        'total_amount'   => (string)$finalAmount,
+        'trade_type'     => 'PAY_BY_QRCODE',
+        'trans_currency' => 'MMK',
+        'version'        => '1.0',
+    ];
+
+    ksort($signParams);
+    $stringA = '';
+    foreach ($signParams as $key => $value) {
+        if ($value !== "" && $value !== null) $stringA .= $key . "=" . $value . "&";
+    }
+    $stringToSign = rtrim($stringA, "&") . "&key=" . env('KBZ_PAY_APP_KEY');
+    $sign = strtoupper(hash('sha256', $stringToSign));
+
+    $payload = [
+        'Request' => [
+            'timestamp'   => $timestamp,
+            'notify_url'  => env('KBZ_PAY_NOTIFY_URL'),
+            'nonce_str'   => $nonce,
+            'sign_type'   => 'SHA256',
+            'method'      => 'kbz.payment.precreate',
+            'sign'        => $sign,
+            'version'     => '1.0',
+            'biz_content' => [
+                'merch_order_id' => $orderId,
+                'merch_code'     => env('KBZ_PAY_MERCHANT_CODE'),
+                'appid'          => env('KBZ_PAY_APP_ID'),
+                'trade_type'     => 'PAY_BY_QRCODE',
+                'total_amount'   => (string)$finalAmount,
+                'trans_currency' => 'MMK'
+            ]
+        ]
+    ];
+
+    try {
+        $response = \Illuminate\Support\Facades\Http::withBody(
+            json_encode($payload, JSON_UNESCAPED_SLASHES), 'application/json'
+        )->post(env('KBZ_PAY_URL'));
+
+        $result = $response->json();
+
+        if (isset($result['Response']['result']) && $result['Response']['result'] === 'SUCCESS') {
+            $qrString = $result['Response']['qrCode'];
+            return view('payment.kbz_qr', compact('qrString', 'ticket'));
+        }
+
+        return back()->with('error', 'KBZ Error: ' . ($result['Response']['msg'] ?? 'Unknown error'));
+
+    } catch (\Exception $e) {
+        \Log::error('KBZ connection error: ' . $e->getMessage());
+        return back()->with('error', 'Connection Error.');
+    }
+}
 
     private function generateBib($eventId, $ticketTypeId, $gender = 'male')
     {
@@ -734,61 +790,72 @@ class TicketController extends Controller
     }
 
     public function showReviewPage()
-    {
-        $order = session('pending_registration');
-        
-        // 1. Safety Check
-        if (!$order || !isset($order['athlete_id'])) {
-            return redirect()->route('athlete.register')->with('error', 'Session expired.');
-        }
-
-        $athlete = \App\Models\Athlete::find($order['athlete_id']);
-        $ticketType = \App\Models\EventTicketType::with('event')->find($order['ticket_type_id']);
-
-        if (!$athlete || !$ticketType || !$ticketType->event) {
-            return redirect()->route('athlete.register')->with('error', 'Invalid registration data.');
-        }
-
-        $event = $ticketType->event;
-
-        // 3. SECURE NATIONALITY CHECK
-        $isNational = (trim(strtolower($athlete->nationality)) === 'myanmar');
-
-        // 4. Set Base Price
-        $basePrice = $isNational ? (float)$ticketType->national_price : (float)$ticketType->foreign_price;
-
-        // 5. GLOBAL EARLY BIRD CALCULATION
-        $globalSoldCount = \App\Models\Ticket::whereHas('ticketType', function($query) use ($event) {
-                $query->where('event_id', $event->id);
-            })
-            ->where('status', '!=', 'rejected') 
-            ->count();
-
-        $discountAmount = 0;
-        $isEarlyBirdActive = false;
-
-        if ($event->early_bird_limit > 0 && $globalSoldCount < $event->early_bird_limit) {
-            $discountAmount = (float)$ticketType->early_bird_discount;
-            $isEarlyBirdActive = true;
-        }
-
-        // 6. Final Totals
-        $subtotal = $basePrice;
-        $serviceFee = 0.00; 
-        $total = ($subtotal - $discountAmount) + $serviceFee;
-        
-        $fullName = trim("{$athlete->first_name} {$athlete->last_name}");
-
-        return view('ticket.checkout', compact(
-            'order', 
-            'subtotal', 
-            'discountAmount', 
-            'isEarlyBirdActive', 
-            'serviceFee', 
-            'total', 
-            'fullName'
-        ));
+{
+    $order = session('pending_registration');
+    
+    // 1. Safety Check
+    if (!$order || !isset($order['athlete_id'])) {
+        return redirect()->route('athlete.register')->with('error', 'Session expired.');
     }
+
+    $athlete = \App\Models\Athlete::find($order['athlete_id']);
+    $ticketType = \App\Models\EventTicketType::with('event')->find($order['ticket_type_id']);
+
+    if (!$athlete || !$ticketType || !$ticketType->event) {
+        return redirect()->route('athlete.register')->with('error', 'Invalid registration data.');
+    }
+
+    $event = $ticketType->event;
+
+    // 3. SECURE NATIONALITY CHECK
+    $isNational = (trim(strtolower($athlete->nationality)) === 'myanmar');
+
+    // 4. Set Base Price
+    $basePrice = $isNational ? (float)$ticketType->national_price : (float)$ticketType->foreign_price;
+
+    // 5. GLOBAL EARLY BIRD CALCULATION
+    $globalSoldCount = \App\Models\Ticket::whereHas('ticketType', function($query) use ($event) {
+            $query->where('event_id', $event->id);
+        })
+        ->where('status', '!=', 'rejected') 
+        ->count();
+
+    $discountAmount = 0;
+    $isEarlyBirdActive = false;
+
+    if ($event->early_bird_limit > 0 && $globalSoldCount < $event->early_bird_limit) {
+        $discountAmount = (float)$ticketType->early_bird_discount;
+        $isEarlyBirdActive = true;
+    }
+
+    // 6. PROMO CODE SESSION CHECK
+    $appliedPromo = session('applied_promo', null);
+    $promoDiscount = $appliedPromo ? (float) $appliedPromo['discount'] : 0.00;
+
+    // 7. Final Totals
+    $subtotal = $basePrice;
+    $serviceFee = 0.00; 
+    
+    // Deduct both early bird discount and promo code discount
+    $calculatedTotal = ($subtotal - $discountAmount - $promoDiscount) + $serviceFee;
+    $total = max(0, $calculatedTotal);
+    $isFree = ($total === 0.0);
+    
+    $fullName = trim("{$athlete->first_name} {$athlete->last_name}");
+
+    return view('ticket.checkout', compact(
+        'order', 
+        'subtotal', 
+        'discountAmount', 
+        'isEarlyBirdActive', 
+        'serviceFee', 
+        'total', 
+        'fullName',
+        'appliedPromo',
+        'promoDiscount',
+        'isFree'
+    ));
+}
 
     public function updateId(Request $request)
 {

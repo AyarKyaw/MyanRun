@@ -113,121 +113,142 @@ class AthleteController extends Controller
     }
 
     public function submit(Request $request)
-    {   
-        // 1. Define standard validation rules
-        $rules = [
-            'face_image' => 'nullable|image|max:2048',
-            'first_name' => 'required|string',
-            'last_name' => 'required|string',
-            'bib_name' => 'required|string|max:20', 
-            'contact' => 'required|digits_between:9,11',
-            'dob' => 'required|date_format:d/m/Y',
-            'has_itra' => 'required|in:yes,no',
-            'itra_details' => 'required_if:has_itra,yes',
-            'gender' => 'required',
-            't_shirt_size' => 'required',
-            'blood_type' => 'required',
-            'nrc_number' => 'nullable|required_if:nat_type,national|digits:6',
-        ];
+{   
+    // 1. Define standard validation rules
+    $rules = [
+        'face_image'   => 'nullable|image|max:2048',
+        'first_name'   => 'required|string',
+        'last_name'    => 'required|string',
+        'bib_name'     => 'required|string|max:20', 
+        'contact'      => 'required|digits_between:9,11',
+        'dob'          => 'required|date_format:d/m/Y',
+        'gender'       => 'required',
+        't_shirt_size' => 'required',
+        'blood_type'   => 'required',
+        'nrc_number'   => 'nullable|required_if:nat_type,national|digits:6',
+        'type'           => 'required|in:national,foreigner',
+        'job_work'       => 'required_if:type,foreigner|nullable|string|max:255',
+        'passport_image' => 'required_if:type,foreigner|nullable|image|mimes:jpeg,png,jpg,webp|dimensions:max_width=1920,max_height=1080|max:2048',
+        'visa_image'     => 'required_if:type,foreigner|nullable|image|mimes:jpeg,png,jpg,webp|dimensions:max_width=1920,max_height=1080|max:2048',
+    ];
 
-        // 2. ADD UNIQUE CHECKS: Only if it's a relay and they are NOT linking an existing runner
-        if (session('ticket_type') === 'relay' && !$request->filled('friend_runner_id')) {
-            $rules['friend_email'] = 'required|email|unique:users,email';
-            // Check phone too, as duplicate phones will cause login issues later
-            $rules['friend_phone'] = 'required|digits_between:9,15'; 
-        }
+    // 2. ADD UNIQUE CHECKS: Only if it's a relay and they are NOT linking an existing runner
+    if (session('ticket_type') === 'relay' && !$request->filled('friend_runner_id')) {
+        $rules['friend_email'] = 'required|email|unique:users,email';
+        $rules['friend_phone'] = 'required|digits_between:9,15'; 
+    }
 
-        $request->validate($rules);
+    $request->validate($rules);
 
-        // 3. Format Date
-        $formattedDob = Carbon::createFromFormat('d/m/Y', $request->dob)->format('Y-m-d');
+    // 3. Format Date
+    $formattedDob = Carbon::createFromFormat('d/m/Y', $request->dob)->format('Y-m-d');
 
-        // 4. Handle ID Number
-        $idNumber = ($request->nat_type === 'national') 
-            ? "{$request->nrc_state}/{$request->nrc_district}({$request->nrc_naing})" . str_pad($request->nrc_number, 6, '0', STR_PAD_LEFT)
-            : strtoupper($request->passport_id);
+    // 4. Handle ID Number
+    $idNumber = ($request->nat_type === 'national') 
+        ? "{$request->nrc_state}/{$request->nrc_district}({$request->nrc_naing})" . str_pad($request->nrc_number, 6, '0', STR_PAD_LEFT)
+        : strtoupper($request->passport_id);
 
-        // 5. Handle Image
-        $path = $request->existing_face;
-        if ($request->hasFile('face_image')) {
-            $path = $request->file('face_image')->store('athletes', 'public');
-        }
+    // Fetch existing athlete record if present to prevent wiping image paths on edit
+    $existingAthlete = Athlete::where('runner_id', Auth::user()->runner_id)->first();
 
-        $finalBib = $this->generateBib($request->gender, session('ticket_category'));
+    // 5. Handle Images (Corrected paths to singular: 'athletes/job' and 'athletes/visa')
+    $path = $request->existing_face;
+    if ($request->hasFile('face_image')) {
+        $path = $request->file('face_image')->store('athletes', 'public');
+    }
 
-        // 6. Save Mode B Data to Session
-        if (session('ticket_type') === 'relay' && !$request->filled('friend_runner_id')) {
-            session([
-                'partner_mode_b_data' => [
-                    'first_name' => $request->friend_first_name,
-                    'last_name'  => $request->friend_last_name,
-                    'email'      => $request->friend_email,
-                    'phone'      => $request->friend_phone,
-                ]
-            ]);
-        }
+    // Handle Passport Copy Image Upload
+    $passportImagePath = $existingAthlete->passport_image_path ?? null;
+    if ($request->hasFile('passport_image')) {
+        \Storage::disk('public')->makeDirectory('athletes/passport');
+        $passportImagePath = $request->file('passport_image')->store('athletes/passport', 'public');
+    }
 
-        // 7. Update/Create Athlete
-        $athlete = Athlete::updateOrCreate(
-            ['runner_id' => Auth::user()->runner_id],
-            [
-                'face_image_path' => $path,
-                'nat_type' => $request->nat_type,
-                'id_number' => $idNumber,
-                'first_name' => $request->first_name,
-                'last_name' => $request->last_name,
-                'father_name' => $request->father_name,
-                'address' => $request->address,
-                'dob' => $formattedDob,
-                'gender' => $request->gender,
-                'nationality' => $request->nationality,
-                'blood_type' => $request->blood_type,
-                'contact' => $request->contact,
-                'state' => $request->state,
-                'viber' => $request->viber,
-                'has_medical_condition' => $request->has_condition === 'yes',
-                'medical_details' => $request->medical_conditions,
-                'has_itra' => $request->has_itra === 'yes',
-                'itra_details' => $request->itra_details,
-            ]
-        );
+    // Handle Visa Document Image Upload
+    $visaImagePath = $existingAthlete->visa_image_path ?? null;
+    if ($request->hasFile('visa_image')) {
+        \Storage::disk('public')->makeDirectory('athletes/visa');
+        $visaImagePath = $request->file('visa_image')->store('athletes/visa', 'public');
+    }
 
-        // 8. Set Primary Registration Session
+    $finalBib = $this->generateBib($request->gender, session('ticket_category'));
+
+    // 6. Save Mode B Data to Session
+    if (session('ticket_type') === 'relay' && !$request->filled('friend_runner_id')) {
         session([
-            'pending_registration' => [
-                'athlete_id'   => $athlete->id,
-                'bib_name'     => $request->bib_name,
-                'bib_number'   => $finalBib,
-                't_shirt_size' => $request->t_shirt_size,
-                'category'     => session('ticket_category'),
-                'ticket_type_id' => session('ticket_type_id'), 
-                'price'        => session('ticket_price'),
-                'event_id'     => session('event_id'), 
-                'exp_level'    => $request->exp,
-                'status'       => 'pending'
+            'partner_mode_b_data' => [
+                'first_name' => $request->friend_first_name,
+                'last_name'  => $request->friend_last_name,
+                'email'      => $request->friend_email,
+                'phone'      => $request->friend_phone,
             ]
         ]);
+    }
+    
 
-        // 9. Relay Handling Logic
-        if (session('ticket_type') === 'relay') {
-            if ($request->filled('friend_runner_id')) {
-                // ... existing login logic ...
-                $friend = User::where('runner_id', $request->friend_runner_id)->first();
-                
-                if (!$friend || !\Hash::check($request->friend_password, $friend->password)) {
-                    return back()->withErrors(['friend_password' => 'Partner Runner ID or Password does not match.'])->withInput();
-                }
+    // 7. Update/Create Athlete
+    $athlete = Athlete::updateOrCreate(
+        ['runner_id' => Auth::user()->runner_id],
+        [
+            'face_image_path'       => $path,
+            'nat_type' => $request->nat_type ?? $request->type ?? 'national',
+            'job_work'              => $request->job_work,
+            'passport_image_path'   => $passportImagePath,
+            'visa_image_path'       => $visaImagePath,
+            'id_number'             => $idNumber,
+            'first_name'            => $request->first_name,
+            'last_name'             => $request->last_name,
+            'father_name'           => $request->father_name,
+            'address'               => $request->address,
+            'dob'                   => $formattedDob,
+            'gender'                => $request->gender,
+            'nationality'           => $request->nationality,
+            'blood_type'            => $request->blood_type,
+            'contact'               => $request->contact,
+            'state'                 => $request->state,
+            'viber'                 => $request->viber,
+            'has_medical_condition' => $request->has_condition === 'yes',
+            'medical_details'       => $request->medical_conditions,
+            'has_itra'              => $request->has_itra === 'yes',
+            'itra_details'          => $request->itra_details,
+        ]
+    );
 
-                session(['friend_user_id' => $friend->id]);
-            } else {
-                session()->forget('friend_user_id');
+    // 8. Set Primary Registration Session
+    session([
+        'pending_registration' => [
+            'athlete_id'     => $athlete->id,
+            'bib_name'       => $request->bib_name,
+            'bib_number'     => $finalBib,
+            't_shirt_size'   => $request->t_shirt_size,
+            'category'       => session('ticket_category'),
+            'ticket_type_id' => session('ticket_type_id'), 
+            'price'          => session('ticket_price'),
+            'event_id'       => session('event_id'), 
+            'exp_level'      => $request->exp,
+            'status'         => 'pending'
+        ]
+    ]);
+
+    // 9. Relay Handling Logic
+    if (session('ticket_type') === 'relay') {
+        if ($request->filled('friend_runner_id')) {
+            $friend = User::where('runner_id', $request->friend_runner_id)->first();
+            
+            if (!$friend || !\Hash::check($request->friend_password, $friend->password)) {
+                return back()->withErrors(['friend_password' => 'Partner Runner ID or Password does not match.'])->withInput();
             }
 
-            return redirect()->route('friend.register'); 
+            session(['friend_user_id' => $friend->id]);
+        } else {
+            session()->forget('friend_user_id');
         }
 
-        return redirect()->route('athlete.consent');
+        return redirect()->route('friend.register'); 
     }
+
+    return redirect()->route('athlete.consent');
+}
 
     public function showFriendRegisterForm(Request $request)
     {

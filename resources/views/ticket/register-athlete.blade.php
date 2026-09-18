@@ -171,6 +171,7 @@
         </ul>
     </div>
 @endif
+
     <div class="absolute top-6 left-6">
         <a href="/ticket?event={{ urlencode(session('event_name') ?? request('event')) }}" class="flex items-center gap-2 text-slate-500 hover:text-[#C3E92D] transition-colors font-semibold group">
             <div class="w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center group-hover:shadow-[#C3E92D]/20 transition-all border border-slate-100">
@@ -258,7 +259,7 @@
             </label>
         </div>
 
-        <input type="hidden" name="nat_type" value="{{ $type }}">
+        <input type="hidden" name="nat_type" value="{{ $type ?? request('type') ?? request('nat_type') ?? 'national' }}">
         
         <div class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -541,7 +542,73 @@
                             <option value="Unknown">Unknown</option>
                         </select>
                     </div>
-                    <div class="md:col-span-2">
+                    <input type="hidden" name="nat_type" value="{{ $natType ?? request('type') }}">
+                   @php
+    // Get $type passed from your controller/request (e.g. 'national' vs 'foreigner')
+    $currentType = $type ?? request('type') ?? request('nat_type') ?? 'national';
+    
+    // Check if the user is a foreigner
+    $isForeigner = (strtolower($currentType) === 'foreigner');
+@endphp
+
+<!-- Hidden input to maintain the selection for form submission -->
+<input type="hidden" name="type" value="{{ $currentType }}">
+
+@if($isForeigner)
+    <!-- 2. Passport Copy Image -->
+    <div class="mb-4">
+        <label class="label-text mb-2 block">Passport Copy (Image) <span class="text-red-500">*</span></label>
+        <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-2xl cursor-pointer hover:border-[#C3E92D] hover:bg-lime-50/50 transition-all">
+            <div id="passport_label" class="flex flex-col items-center justify-center pt-5 pb-6">
+                <svg class="w-8 h-8 mb-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <p class="text-xs text-slate-500 font-medium"><span class="font-bold text-slate-700">Click to upload</span> Passport Copy</p>
+                <p class="text-[10px] text-slate-400 mt-1">PNG, JPG or WEBP</p>
+            </div>
+            <input type="file" 
+            name="passport_image" 
+            id="passport_image" 
+            accept="image/png, image/jpeg, image/webp" 
+            required 
+            onchange="validateImageResolution(this, 1920, 1080, 'passport_label')" 
+            class="hidden" />
+        </label>
+    </div>
+    
+    <!-- 3. Visa Document Image -->
+    <div class="mb-4">
+        <label class="label-text mb-2 block">Visa Document (Image) <span class="text-red-500">*</span></label>
+        <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-2xl cursor-pointer hover:border-[#C3E92D] hover:bg-lime-50/50 transition-all">
+            <div id="visa_label" class="flex flex-col items-center justify-center pt-5 pb-6">
+                <svg class="w-8 h-8 mb-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
+                <p class="text-xs text-slate-500 font-medium"><span class="font-bold text-slate-700">Click to upload</span> Visa Photo</p>
+                <p class="text-[10px] text-slate-400 mt-1">PNG, JPG or WEBP</p>
+            </div>
+            <input type="file" 
+            name="visa_image" 
+            id="visa_image" 
+            accept="image/png, image/jpeg, image/webp" 
+            required 
+            onchange="validateImageResolution(this, 1920, 1080, 'visa_label')" 
+            class="hidden" />
+        </label>
+    </div>
+       <!-- 1. Job / Work Title (Text Input) -->
+    <div class="mb-4">
+        <label for="job_work" class="label-text mb-2 block">Job / Occupation <span class="text-red-500">*</span></label>
+        <input type="text" 
+               name="job_work" 
+               id="job_work" 
+               value="{{ old('job_work', $athlete->job_work ?? '') }}"
+               placeholder="e.g. Software Engineer, Teacher, Manager" 
+               required 
+               class="w-full rounded-2xl border-2 border-slate-200 p-3 text-sm focus:border-[#C3E92D] focus:outline-none transition-all" />
+    </div>
+    @endif
+    <div class="md:col-span-2">
                         <label class="label-text mb-3 block">Do you have any existing medical conditions?</label>
                         <div class="flex gap-4 mb-4">
                             <label class="flex-1 flex items-center justify-center p-3 border-2 border-slate-100 rounded-2xl cursor-pointer transition-all has-[:checked]:border-[#C3E92D] has-[:checked]:bg-lime-50">
@@ -561,7 +628,7 @@
                                     placeholder="e.g. Asthma, Heart Disease, Recent Surgery, etc.">{{ old('medical_conditions', $athlete->medical_conditions ?? '') }}</textarea>
                         </div>
                     </div>
-                    <div class="md:col-span-2">
+                    <!-- <div class="md:col-span-2">
                         <label class="label-text mb-3 block">Do you have an ITRA Profile?</label>
                         <div class="flex gap-4 mb-4">
                             {{-- No Option --}}
@@ -587,7 +654,7 @@
                                 class="input-field border-lime-100 focus:border-[#C3E92D]" 
                                 placeholder="Enter Here...">
                         </div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
            @if(session('ticket_type') === 'relay')
@@ -658,6 +725,34 @@
         </form>
     </div>
 <script>
+    function validateImageResolution(input, maxWidth, maxHeight, labelId) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = function() {
+        // Check dimension resolution
+        if (this.width > maxWidth || this.height > maxHeight) {
+            alert(`Selected image resolution (${this.width}x${this.height}) exceeds the maximum allowed limit of ${maxWidth}x${maxHeight}. Please choose a smaller image.`);
+            input.value = ''; // Reset file input
+            document.getElementById(labelId).innerHTML = `<span class="font-bold text-red-500">Exceeds ${maxWidth}x${maxHeight}!</span>`;
+        } else {
+            // Display filename upon valid selection
+            document.getElementById(labelId).innerHTML = `<span class="font-bold text-lime-600">Selected:</span> ${file.name.substring(0, 18)}...`;
+        }
+        URL.revokeObjectURL(objectUrl);
+    };
+
+    img.onerror = function() {
+        alert("Invalid image file format.");
+        input.value = '';
+        URL.revokeObjectURL(objectUrl);
+    };
+
+    img.src = objectUrl;
+}
 function togglePartnerPassword() {
     const passwordInput = document.getElementById('partner_password');
     const icon = document.getElementById('passwordIcon');
@@ -888,6 +983,33 @@ function setProgress(percent) {
     const offset = circumference - (percent / 100 * circumference);
     circle.style.strokeDashoffset = offset;
 }
+function toggleForeignerFields(nationality) {
+    const foreignerContainer = document.getElementById('foreigner-fields');
+    const jobInput = document.getElementById('job_image');
+    const visaInput = document.getElementById('visa_image');
+
+    if (nationality === 'foreigner') {
+        foreignerContainer.classList.remove('hidden');
+        jobInput.required = true;
+        visaInput.required = true;
+    } else {
+        foreignerContainer.classList.add('hidden');
+        jobInput.required = false;
+        visaInput.required = false;
+        
+        // Reset inputs if user selects local after picking files
+        jobInput.value = '';
+        visaInput.value = '';
+    }
+}
+
+// Ensure state is correctly set on page initial load (e.g. after validation redirects)
+document.addEventListener('DOMContentLoaded', function () {
+    const natSelect = document.getElementById('nat_type');
+    if (natSelect) {
+        toggleForeignerFields(natSelect.value);
+    }
+});
 
 // async function processAI(file) {
 //     updateSmartStatus('processing');
@@ -1028,7 +1150,7 @@ const districtOptions = {
   "9": ["ကဆန", "ကပတ", "ခမစ", "ခအစ", "ငဇန", "ငသရ", "စကတ", "စကန", "ဇဗသ", "ဇယသ", "ညဥန", "တကတ", "တကန", "တတဥ", "တသန", "ဒခသ", "နထက", "ပကခ", "ပဗသ", "ပဘန", "ပမန", "ပသက", "ပဥလ", "မကန", "မခန", "မတရ", "မထလ", "မမန", "မလန", "မသန", "မဟမ", "ရမသ", "လဝန", "ဝတန", "သစန", "သပက", "အမစ", "အမရ", "ဥတသ"],
   "10": ["ကထန", "ကမရ", "ခဆန", "ခဇန", "ပမန", "ဘလန", "မဒန", "မလမ", "ရမန", "လမန", "သထန", "သဖြရ"],
   "11": ["ကတန", "ကတလ", "ကဖန", "ဂမန", "စတန", "တကန", "တပဝ", "ပဏတ", "ပတန", "ဗတထ", "ဘသတ", "မတန", "မပတ", "မပန", "မအတ", "မအန", "မဥန", "ရဗန", "ရသတ", "သတန", "အမန"],
-  "12": ["ကကက", "ကခက", "ကတတ", "ကတန", "ကမတ", "ကမန", "ကမရ", "ခရန", "စခန", "ဆကခ", "ဆကန", "တကန", "တတထ", "တတန", "တမန", "ထတပ", "ဒဂဆ", "ဒဂတ", "ဒဂန", "ဒဂမ", "ဒဂရ", "ဒပန", "ဒလန", "ပဇတ", "ပဘတ", "ဗဟန", "မဂတ", "မဂဒ", "မဘန", "မရက", "ရကန", "ရပသ", "လကန", "လမတ", "လမန", "လသန", "လသယ", "သကတ", "သခန", "သဃက", "သလန", "အစန", "အလန", "ဥကတ", "ဥကန", "ဥကမ"],
+  "12": ["ကကက", "ကခက", "ကတတ", "ကတန", "ကမတ", "ကမန", "ကမရ", "ခရန", "စခန", "ဆကခ", "ဆကန", "တကန", "တတထ", "တတန", "တမန", "ထတပ", "ဒဂဆ", "ဒဂတ", "ဒဂန", "ဒဂမ", "ဒဂရ", "ဒပန", "ဒလန", "ပဇတ", "ပဘတ", "ဗတထ", "ဗဟန", "မဂတ", "မဂဒ", "မဘန", "မရက", "ရကန", "ရပသ", "လကန", "လမတ", "လမန", "လသန", "လသယ", "သကတ", "သခန", "သဃက", "သလန", "အစန", "အလန", "ဥကတ", "ဥကန", "ဥကမ"],
   "13": ["ကခန", "ကတတ", "ကတန", "ကတလ", "ကမဆ", "ကမန", "ကရန", "ကလတ", "ကလဒ", "ကလန", "ကလဖ", "ကသန", "ကဟန", "ခမန", "ခရဟ", "ခလန", "ဆဆန", "ဆဖန", "ညရန", "တကန", "တခလ", "တမည", "တယန", "တလန", "နကန", "နခတ", "နခန", "နခဝ", "နဆန", "နတန", "နတယ", "နဖန", "နမတ", "နဝန", "ပခန", "ပဆန", "ပတယ", "ပပက", "ပယန", "ပလတ", "ပလန", "ပဝန", "ဖခန", "မကန", "မခန", "မငန", "မဆတ", "မဆန", "မတတ", "မတန", "မနန", "မပန", "မဖန", "မဗတ", "မဘန", "မမဆ", "မမတ", "မမန", "မယန", "မရတ", "မရန", "မလန", "မဟရ", "ယလန", "ရငန", "ရစန", "ရဖန", "လကတ", "လခတ", "လခန", "လရန", "လလန", "လဟန", "သနန", "သပန", "ဟတန", "ဟပတ", "ဟပန", "အခန", "အတန"],
   "14": ["ကကထ", "ကကန", "ကခန", "ကပန", "ကလန", "ငဆန", "ငပတ", "ငရက", "ငသခ", "ငသယ", "ဇလန", "ညတန", "ဒဒရ", "ဒနဖြ", "ပစလ", "ပတန", "ပသန", "ဖပန", "ဘကလ", "မမက", "မမန", "မအန", "မအပ", "ရကန", "ရသယ", "လပတ", "လမန", "ဝခမ", "သပန", "ဟကကျ", "ဟသတ", "အဂပ", "အမတ", "အမန"]
 };

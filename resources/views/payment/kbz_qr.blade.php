@@ -1,6 +1,6 @@
 <title>MyanRun || QR CODE</title>
 @php
-    $mmqrLogo = 'mmqr.png'; 
+    $mmqrLogo = 'payment/mmqr.png'; 
     $kbzPayLogo = 'kbzpay_blue_icon.jpg'; 
     
     // GUIDELINE CALCULATIONS

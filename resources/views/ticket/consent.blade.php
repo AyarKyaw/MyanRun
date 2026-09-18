@@ -42,8 +42,8 @@
 
                         <div class="waiver-section mb-5">
                             <h4 style="font-size: 18px; font-weight: 700; color: #e63946;">1. Waiver and Release of Liability</h4>
-                            <p class="mb-2">I acknowledge and accept all risks associated with participation in the Cherry Trail Run 2026 (the "Event"), including the potential for injury, accident, or property damage. On behalf of myself and all my heirs, executors, administrators, and assigns, I hereby agree to release and forever discharge the event organizers, sponsors, and all associated parties from any and all claims and liabilities.</p>
-                            <p style="color: #666; line-height: 2;">တာဝန်ယူမှုမှ ကင်းလွတ်ခွင့်ပြုခြင်း (Waiver and Release): ကျွနု်ပ်သည် Cherry Trail Run 2026 (the "Event") ပါဝင်ခြင်းနှင့် ဆက်စပ်၍ မတော်တဆမှု၊ ထိခိုက်ဒဏ်ရာ သို့မဟုတ် ပစ္စည်းပျက်စီးမှုများ ဖြစ်ပေါ်လာနိုင်သည့် အန္တရာယ်အားလုံးကို နားလည်လက်ခံပါသည်။ ကျွနု်ပ်ကိုယ်စားနှင့် ကျွနု်ပ်၏ အမွေခံများ၊ အုပ်ချုပ်သူများ၊ တာဝန်ခံပုဂ္ဂိုလ်များနှင့် လွှဲအပ်ခြင်းခံရသူများအားလုံးအတွက်၊ ပြိုင်ပွဲစီစဉ်သူများ၊ ပံ့ပိုးသူများနှင့် သက်ဆိုင်သူများ အားလုံးကို တောင်းဆိုမှုများမှ အပြီးအပိုင် စွန့်လွှတ်ကြောင်းနှင့် တာဝန်ယူမှုများအားလုံးမှ ကင်းလွတ်ခွင့်ပြုကြောင်း သဘောတူပါသည်။</p>
+                            <p class="mb-2">I acknowledge and accept all risks associated with participation in the Bagan Marathon 2026 (the "Event"), including the potential for injury, accident, or property damage. On behalf of myself and all my heirs, executors, administrators, and assigns, I hereby agree to release and forever discharge the event organizers, sponsors, and all associated parties from any and all claims and liabilities.</p>
+                            <p style="color: #666; line-height: 2;">တာဝန်ယူမှုမှ ကင်းလွတ်ခွင့်ပြုခြင်း (Waiver and Release): ကျွနု်ပ်သည်  Bagan Marathon 2026(the "Event) ပါဝင်ခြင်းနှင့် ဆက်စပ်၍ မတော်တဆမှု၊ ထိခိုက်ဒဏ်ရာ သို့မဟုတ် ပစ္စည်းပျက်စီးမှုများ ဖြစ်ပေါ်လာနိုင်သည့် အန္တရာယ်အားလုံးကို နားလည်လက်ခံပါသည်။ ကျွနု်ပ်ကိုယ်စားနှင့် ကျွနု်ပ်၏ အမွေခံများ၊ အုပ်ချုပ်သူများ၊ တာဝန်ခံပုဂ္ဂိုလ်များနှင့် လွှဲအပ်ခြင်းခံရသူများအားလုံးအတွက်၊ ပြိုင်ပွဲစီစဉ်သူများ၊ ပံ့ပိုးသူများနှင့် သက်ဆိုင်သူများ အားလုံးကို တောင်းဆိုမှုများမှ အပြီးအပိုင် စွန့်လွှတ်ကြောင်းနှင့် တာဝန်ယူမှုများအားလုံးမှ ကင်းလွတ်ခွင့်ပြုကြောင်း သဘောတူပါသည်။</p>
                         </div>
 
                         <div class="waiver-section mb-5" style="margin-top: 30px;">
@@ -64,19 +64,19 @@
                     <div id="consent-section" style="margin-top: 60px; padding: 40px; border-top: 2px dashed #eee; opacity: 0.2; pointer-events: none; transition: all 0.6s ease;">
                         
                         <div style="background: #fff5f5; border: 1px solid #feb2b2; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-                            <h5 style="font-weight: 700; color: #c53030; margin-bottom: 10px;">
+                            <!-- <h5 style="font-weight: 700; color: #c53030; margin-bottom: 10px;">
                                 <i class="fa fa-exclamation-triangle"></i> For Participants Under 18 
                                 <span style="display: block; font-size: 13px; font-weight: 400;">(အသက် ၁၈ နှစ်အောက် ပြိုင်ပွဲဝင်များအတွက်)</span>
                             </h5>
                             <p style="font-size: 14px; color: #4a5568; margin-bottom: 15px;">
                                 If you are under 18, please download, sign, and bring the Parental Consent Form to the bib collection point.
                                 <br>အသက် ၁၈ နှစ်အောက်ဖြစ်ပါက မိဘအုပ်ထိန်းသူသဘောတူညီချက်ပုံစံကို ဒေါင်းလုဒ်ဆွဲ၍ လက်မှတ်ရေးထိုးကာ BIB ထုတ်ယူချိန်တွင် ယူဆောင်လာပေးရပါမည်။
-                            </p>
+                            </p> -->
                             <div class="d-flex flex-wrap gap-2">
-                                <a href="{{ asset('images/P/English.pdf') }}" target="_blank" class="btn btn-sm" style="background: #4a5568; color: white; font-weight: 600; border-radius: 4px; padding: 8px 15px;">
+                                <a href="{{ asset('images/P/ConsentEnglish.pdf') }}" target="_blank" class="btn btn-sm" style="background: #4a5568; color: white; font-weight: 600; border-radius: 4px; padding: 8px 15px;">
                                     <i class="fa fa-download me-1"></i> Consent Form (EN)
                                 </a>
-                                <a href="{{ asset('images/P/Myanmar.pdf') }}" target="_blank" class="btn btn-sm" style="background: #4a5568; color: white; font-weight: 600; border-radius: 4px; padding: 8px 15px;">
+                                <a href="{{ asset('images/P/ConsentBurmese.pdf') }}" target="_blank" class="btn btn-sm" style="background: #4a5568; color: white; font-weight: 600; border-radius: 4px; padding: 8px 15px;">
                                     <i class="fa fa-download me-1"></i> Consent Form (MM)
                                 </a>
                             </div>

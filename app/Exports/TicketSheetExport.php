@@ -34,7 +34,7 @@ class TicketSheetExport implements FromCollection, WithTitle, WithHeadings, Shou
 
     public function headings(): array
     {
-        return ['Full Name','First Name','Middle Name','Last Name', 'BIB Name', 'BIB Number', 'ID No.', 'Phone no.', "Date of Birth", 'Gender', 'Category', 'T-Shirt size', 'Blood Type', 'Price', 'Status', 'Is Printed', 'Purchase Date', 'Division', 'Nationality', 'Address', 'ITRA'];
+        return ['Ticket ID', 'Email', 'Full Name','First Name','Middle Name','Last Name', 'BIB Name', 'BIB Number', 'ID No.', 'Phone no.', "Date of Birth", 'Gender', 'Category', 'T-Shirt size', 'Blood Type', 'Price', 'Status', 'Is Printed', 'Purchase Date', 'Division', 'Nationality', 'Address', 'ITRA'];
     }
 
     public function collection()
@@ -70,12 +70,14 @@ class TicketSheetExport implements FromCollection, WithTitle, WithHeadings, Shou
             $athlete = $t->athlete;
             $user = $athlete?->user;
             
-            $fullName = $user ? trim("{$user->first_name} {$user->mid_name} {$user->last_name}") : 'Guest';
+            $fullName = $user ? trim("{$user->first_name} {$user->middle_name} {$user->last_name}") : 'Guest';
 
             return [
+                str_pad($t->id, 5, '0', STR_PAD_LEFT),
+                $user?->email ?? 'N/A',
                 $fullName,
                 $athlete?->first_name ?? 'N/A',
-                $athlete?->middle_name ?? 'N/A',
+                $user?->middle_name ?? 'N/A',
                 $athlete?->last_name ?? 'N/A',
                 $t->bib_name ?? 'N/A',
                 $t->bib_number ?? '0000',

@@ -39,7 +39,7 @@ class UserController extends Controller
         ->paginate(3)
         ->withQueryString();
 
-    $fullName = trim("{$user->first_name} {$user->mid_name} {$user->last_name}");
+    $fullName = trim("{$user->first_name} {$user->middle_name} {$user->last_name}");
 
     return view('user.dashboard', compact('user', 'tickets', 'fullName', 'athlete'));
 }

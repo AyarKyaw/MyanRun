@@ -115,6 +115,12 @@
                         <span class="nav-text">Settings</span>
                     </a>
                 </li>
+                <li>
+                    <a class="ai-icon" href="{{ route('admin.promo_codes.index') }}" aria-expanded="false">
+                        <i class="fa fa-cog"></i>
+                        <span class="nav-text">Promo Codes</span>
+                    </a>
+                </li>
                 @endif
             @endif {{-- END ADMIN GUARD --}}
 

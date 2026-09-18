@@ -573,10 +573,30 @@
                     </div>
 
                     <div class="mt-4">
-                        <div class="text-center p-4 bg-light rounded-4 border-dashed border-2">
-                            <h6 class="fw-bold mb-3"><i class="fa fa-receipt me-1 text-success"></i> Payment Receipt</h6>
-                            <img id="modal-transaction-img" src="" alt="Proof" class="img-fluid shadow-sm" style="max-height: 350px; cursor: zoom-in;" onclick="window.open(this.src)">
-                            <p class="text-muted small mt-3 mb-0">Click the image to expand to full size</p>
+                        <!-- Foreigner Specific Text Details (Job / Occupation) -->
+                        <div id="modal-foreigner-details" class="mb-3 p-3 bg-light rounded-3 border hidden">
+                            <span class="text-muted small fw-bold uppercase d-block mb-1">Job / Occupation</span>
+                            <span id="modal-job-work-text" class="fw-bold text-dark fs-6">-</span>
+                        </div>
+
+                        <div class="row g-3">
+                            <!-- Passport Copy Image (Replaced Job Image) -->
+                            <div class="col-md-6">
+                                <div class="text-center p-4 bg-light rounded-4 border-dashed border-2 h-100 flex-column justify-content-center">
+                                    <h6 class="fw-bold mb-3"><i class="fa fa-id-card me-1 text-primary"></i> Passport Copy</h6>
+                                    <img id="modal-passport-img" src="" alt="Passport Copy" class="img-fluid shadow-sm rounded" style="max-height: 250px; cursor: zoom-in;" onclick="if(this.src) window.open(this.src)">
+                                    <p class="text-muted small mt-3 mb-0">Click image to expand full size</p>
+                                </div>
+                            </div>
+
+                            <!-- Visa Document Image -->
+                            <div class="col-md-6">
+                                <div class="text-center p-4 bg-light rounded-4 border-dashed border-2 h-100 flex-column justify-content-center">
+                                    <h6 class="fw-bold mb-3"><i class="fa fa-passport me-1 text-info"></i> Visa Document</h6>
+                                    <img id="modal-visa-img" src="" alt="Visa Document" class="img-fluid shadow-sm rounded" style="max-height: 250px; cursor: zoom-in;" onclick="if(this.src) window.open(this.src)">
+                                    <p class="text-muted small mt-3 mb-0">Click image to expand full size</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -681,7 +701,43 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('modal-medical').innerText = athlete.medical_details || 'None';
             document.getElementById('modal-state').innerText = athlete.state || 'None';
             document.getElementById('modal-nat').innerText = athlete.nat_type || 'None';
-            document.getElementById('modal-transaction-img').src = transactionImageUrl;
+            // document.getElementById('modal-transaction-img').src = transactionImageUrl;
+            // 1. Populate Job / Occupation Text
+            const jobWorkText = document.getElementById('modal-job-work-text');
+            const foreignerContainer = document.getElementById('modal-foreigner-details');
+
+            if (athlete.job_work) {
+                if (jobWorkText) jobWorkText.textContent = athlete.job_work;
+                if (foreignerContainer) foreignerContainer.classList.remove('hidden');
+            } else {
+                if (foreignerContainer) foreignerContainer.classList.add('hidden');
+            }
+
+            // 2. Populate Passport Image
+            const passportImg = document.getElementById('modal-passport-img');
+            if (passportImg) {
+                if (athlete.passport_image_path) {
+                    const cleanPath = athlete.passport_image_path.replace(/^\/+/, '');
+                    passportImg.src = cleanPath.startsWith('storage/') ? '/' + cleanPath : '/storage/' + cleanPath;
+                    passportImg.style.display = 'inline-block';
+                } else {
+                    passportImg.src = '';
+                    passportImg.style.display = 'none';
+                }
+            }
+
+            // 3. Populate Visa Image
+            const visaImg = document.getElementById('modal-visa-img');
+            if (visaImg) {
+                if (athlete.visa_image_path) {
+                    const cleanPath = athlete.visa_image_path.replace(/^\/+/, '');
+                    visaImg.src = cleanPath.startsWith('storage/') ? '/' + cleanPath : '/storage/' + cleanPath;
+                    visaImg.style.display = 'inline-block';
+                } else {
+                    visaImg.src = '';
+                    visaImg.style.display = 'none';
+                }
+            }
             
             
             // --- MOVED ALL OF THIS INSIDE THE CLICK FUNCTION ---
