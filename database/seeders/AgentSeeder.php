@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Agent; // Make sure this matches your Agent model path
+use App\Models\Admin; 
 use Illuminate\Support\Facades\Hash;
 
 class AgentSeeder extends Seeder

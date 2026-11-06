@@ -108,7 +108,7 @@ class TicketController extends Controller
         $baseQuery = \App\Models\Ticket::where('event', $eventName)->whereNotNull('bib_number');
         
         $counts = [
-            'approved' => (clone $baseQuery)->where('status', 'approved')->distinct()->count('bib_number'),
+            'approved' => (clone $baseQuery)->where('status', 'approved')->count(),
         ];
 
         if (!$isSupporter) {
@@ -228,134 +228,136 @@ class TicketController extends Controller
     }
 
     public function downloadPNG($id) 
-{
-    // 1. Get Ticket Data
-    $data = $this->getTicketData($id);
-    $ticket = $data['ticket']; 
+    {
+        // 1. Get Ticket Data
+        $data = $this->getTicketData($id);
+        $ticket = $data['ticket']; 
 
-    // 2. Fetch Related Models
-    $athlete = \App\Models\Athlete::find($ticket->athlete_id);
-    $user = $athlete ? \App\Models\User::where('runner_id', $athlete->runner_id)->first() : null;
-    $ticketType = \App\Models\EventTicketType::find($ticket->ticket_type_id);
+        // 2. Fetch Related Models
+        $athlete = \App\Models\Athlete::find($ticket->athlete_id);
+        $user = $athlete ? \App\Models\User::where('runner_id', $athlete->runner_id)->first() : null;
+        $ticketType = \App\Models\EventTicketType::find($ticket->ticket_type_id);
 
-    if (!$athlete || !$user || !$ticketType) {
-        return "ERROR: Required information not found.";
-    }
+        if (!$athlete || !$user || !$ticketType) {
+            return "ERROR: Required information not found.";
+        }
 
-    // 3. Map variables
-    $id_doc      = $athlete->id_number ?? 'N/A';
-    $fullName    = trim("{$user->first_name} {$user->middle_name} {$user->last_name}");
-    $bibName     = $ticket->bib_name ?? 'N/A';
-    $bibNumber   = $ticket->bib_number ?? '0000';
-    $category    = $ticketType->name ?? 'N/A';
-    $nationality = $athlete->nationality ?? 'N/A';
-    $dob         = $athlete->dob ?? 'N/A';
-    $gender      = $athlete->gender ?? 'N/A';
-    $division    = $athlete->state ?? 'N/A';
-    $email       = $user->email ?? 'N/A';
-    $viber       = $athlete->viber ?? 'N/A';
-    $phone       = $user->phone ?? 'N/A';
-    $contact     = $athlete->contact ?? 'N/A';
-    $tSize       = $ticket->t_shirt_size ?? 'N/A';
-    $blood       = $athlete->blood_type ?? 'N/A';
-    $exp         = $ticket->experience_level ?? 'N/A';
-    $medical     = $athlete->medical_details ?? 'None';
-    $itra        = $athlete->itra_details ?? 'None';
+        // 3. Map variables
+        $id_doc      = $athlete->id_number ?? 'N/A';
+        $fullName    = trim("{$user->first_name} {$user->middle_name} {$user->last_name}");
+        $bibName     = $ticket->bib_name ?? 'N/A';
+        $bibNumber   = $ticket->bib_number ?? '0000';
+        $category    = $ticketType->name ?? 'N/A';
+        $nationality = $athlete->nationality ?? 'N/A';
+        $dob         = $athlete->dob ?? 'N/A';
+        $gender      = $athlete->gender ?? 'N/A';
+        $division    = $athlete->state ?? 'N/A';
+        $email       = $user->email ?? 'N/A';
+        $viber       = $athlete->viber ?? 'N/A';
+        $phone       = $user->phone ?? 'N/A';
+        $contact     = $athlete->contact ?? 'N/A';
+        $tSize       = $ticket->t_shirt_size ?? 'N/A';
+        $blood       = $athlete->blood_type ?? 'N/A';
+        $exp         = $ticket->experience_level ?? 'N/A';
+        $medical     = $athlete->medical_details ?? 'None';
+        $itra        = $athlete->itra_details ?? 'None';
+        $address        = $athlete->address ?? 'None';
+        $ticket_id = str_pad($ticket->id, 5, '0', STR_PAD_LEFT);
 
-    $qrContent = "ID: $id_doc\nName: $fullName\nBIB Name: $bibName\nBIB: $bibNumber\nCategory: $category\nNationality: $nationality\nDOB: $dob\nGender: $gender\nDivision: $division\nEmail: $email\nViber: $viber\nPhone: $phone\nContact: $contact\nSize: $tSize\nBlood: $blood\nExp: $exp\nMedical: $medical\nITRA: $itra";
+        $qrContent = "Ticket ID: $ticket_id\nID Number: $id_doc\nName: $fullName\nBIB Name: $bibName\nNationality: $nationality\nGender: $gender\nAddress: $address\n Tshirt-size: $tSize\n Category: $category\n";
 
-    // 4. PATH LOGIC (Fixed for Windows and public/storage)
-    $dbPath = ltrim($ticketType->ticket_png, '/'); 
-    
-    // If the path in DB already includes 'storage/', we don't want to double it
-    $relativePath = str_starts_with($dbPath, 'storage') ? $dbPath : 'storage/' . $dbPath;
-    
-    // Normalize slashes for Windows
-    $templatePath = public_path(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $relativePath));
+        // 4. PATH LOGIC (Fixed for Windows and public/storage)
+        $dbPath = ltrim($ticketType->ticket_png, '/'); 
+        
+        // If the path in DB already includes 'storage/', we don't want to double it
+        $relativePath = str_starts_with($dbPath, 'storage') ? $dbPath : 'storage/' . $dbPath;
+        
+        // Normalize slashes for Windows
+        $templatePath = public_path(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $relativePath));
 
-    $fontPath = public_path('assets/fonts/pyidaungsu.ttf');
-    $logoPath = public_path('images/myan_logo.jpg');
+        $fontPath = public_path('assets/fonts/pyidaungsu.ttf');
+        $logoPath = public_path('images/myan_logo.jpg');
 
-    if (!\Illuminate\Support\Facades\File::exists($templatePath)) {
-        return "ERROR: Template not found at " . $templatePath;
-    }
+        if (!\Illuminate\Support\Facades\File::exists($templatePath)) {
+            return "ERROR: Template not found at " . $templatePath;
+        }
 
-    // 5. Create Image Resource (Check Extension)
-    $extension = strtolower(pathinfo($templatePath, PATHINFO_EXTENSION));
-    if ($extension === 'png') {
-        $image = @\imagecreatefrompng($templatePath);
-        \imagealphablending($image, true);
-        \imagesavealpha($image, true);
-    } else {
-        $image = @\imagecreatefromjpeg($templatePath);
-    }
+        // 5. Create Image Resource (Check Extension)
+        $extension = strtolower(pathinfo($templatePath, PATHINFO_EXTENSION));
+        if ($extension === 'png') {
+            $image = @\imagecreatefrompng($templatePath);
+            \imagealphablending($image, true);
+            \imagesavealpha($image, true);
+        } else {
+            $image = @\imagecreatefromjpeg($templatePath);
+        }
 
-    if (!$image) return "ERROR: Failed to process image. Check GD library.";
+        if (!$image) return "ERROR: Failed to process image. Check GD library.";
 
-    $white = \imagecolorallocate($image, 255, 255, 255);
-    
-    // 6. Drawing & QR Code
-   if (\Illuminate\Support\Facades\File::exists($fontPath)) {
-    // Color setup (Dark text matches the labels, White for contrast if needed)
-    $darkColor = \imagecolorallocate($image, 20, 20, 20); 
+        $white = \imagecolorallocate($image, 255, 255, 255);
+        
+        // 6. Drawing & QR Code
+        if (\Illuminate\Support\Facades\File::exists($fontPath)) {
+        // Color setup (Dark text matches the labels, White for contrast if needed)
+        $darkColor = \imagecolorallocate($image, 255, 255, 255); 
 
-    // 1. Position Adjustments (Shifted right and scaled up to fit the template layout)
-    $valueX     = 1320; // X position to align values right after the printed labels
-    $fontSize   = 24;   // Larger font size
-    $lineHeight = 70;   // Spacing to align with template label rows
-    $startY     = 55;   // Top margin for the first value (Name)
+        // 1. Position Adjustments (Shifted right and scaled up to fit the template layout)
+        $valueX     = 2350; // X position to align values right after the printed labels
+        $fontSize   = 80;   // Larger font size
+        $lineHeight = 180;   // Spacing to align with template label rows
+        $startY     = 220;   // Top margin for the first value (Name)
 
-    // 1. Name Value
-    \imagettftext($image, $fontSize, 0, $valueX, $startY, $darkColor, $fontPath, $fullName);
+        // 1. Name Value
+        \imagettftext($image, $fontSize, 0, $valueX, $startY, $darkColor, $fontPath, $fullName);
 
-    // 2. Ticket ID / Reg.No Value
-    $regNo = str_pad($ticket->id, 5, '0', STR_PAD_LEFT);
-    \imagettftext($image, $fontSize, 0, $valueX, $startY + ($lineHeight * 1), $darkColor, $fontPath, $regNo);
+        // 2. Ticket ID / Reg.No Value
+        $regNo = str_pad($ticket->id, 5, '0', STR_PAD_LEFT);
+        \imagettftext($image, $fontSize, 0, $valueX, $startY + ($lineHeight * 1), $darkColor, $fontPath, $regNo);
 
-    // 3. Bib Name Value
-    \imagettftext($image, $fontSize, 0, $valueX, $startY + ($lineHeight * 2), $darkColor, $fontPath, strtoupper($bibName));
+        // 3. Bib Name Value
+        \imagettftext($image, $fontSize, 0, $valueX, $startY + ($lineHeight * 2), $darkColor, $fontPath, strtoupper($bibName));
 
-    // 4. ID Number / Passport Value
-    \imagettftext($image, 20, 0, $valueX, $startY + ($lineHeight * 3), $darkColor, $fontPath, $id_doc);
+        // 4. ID Number / Passport Value
+        \imagettftext($image, 80, 0, $valueX, $startY + ($lineHeight * 3), $darkColor, $fontPath, $id_doc);
 
-    // 2. QR Code Setup (Scaled up and centered inside the white box)
-    $qrSize = 220; 
-    $qrX    = 1260; 
-    $qrY    = 490; 
+        // 2. QR Code Setup (Scaled up and centered inside the white box)
+        $qrSize = 600; 
+        $qrX    = 2300; 
+        $qrY    = 850; 
 
-    $qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size={$qrSize}x{$qrSize}&ecc=H&data=" . urlencode($qrContent);
+        $qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size={$qrSize}x{$qrSize}&ecc=H&data=" . urlencode($qrContent);
 
-    $ctx = stream_context_create(['http' => ['timeout' => 5]]);
-    $qrCodeRaw = @file_get_contents($qrUrl, false, $ctx);
+        $ctx = stream_context_create(['http' => ['timeout' => 5]]);
+        $qrCodeRaw = @file_get_contents($qrUrl, false, $ctx);
 
-    if ($qrCodeRaw) {
-        $qrCodeImage = \imagecreatefromstring($qrCodeRaw);
-        if ($qrCodeImage) {
-            if (\Illuminate\Support\Facades\File::exists($logoPath)) {
-                $logo = @\imagecreatefromjpeg($logoPath);
-                if ($logo) {
-                    $qrWidth = \imagesx($qrCodeImage); $qrHeight = \imagesy($qrCodeImage);
-                    $logoWidth = \imagesx($logo); $logoHeight = \imagesy($logo);
-                    $logoTargetWidth = $qrWidth * 0.22;
-                    $logoTargetHeight = $logoHeight * ($logoTargetWidth / $logoWidth);
-                    $dstX = ($qrWidth - $logoTargetWidth) / 2;
-                    $dstY = ($qrHeight - $logoTargetHeight) / 2;
-                    \imagefilledrectangle($qrCodeImage, $dstX - 2, $dstY - 2, $dstX + $logoTargetWidth + 2, $dstY + $logoTargetHeight + 2, $white);
-                    \imagecopyresampled($qrCodeImage, $logo, $dstX, $dstY, 0, 0, $logoTargetWidth, $logoTargetHeight, $logoWidth, $logoHeight);
-                    \imagedestroy($logo);
+        if ($qrCodeRaw) {
+            $qrCodeImage = \imagecreatefromstring($qrCodeRaw);
+            if ($qrCodeImage) {
+                if (\Illuminate\Support\Facades\File::exists($logoPath)) {
+                    $logo = @\imagecreatefromjpeg($logoPath);
+                    if ($logo) {
+                        $qrWidth = \imagesx($qrCodeImage); $qrHeight = \imagesy($qrCodeImage);
+                        $logoWidth = \imagesx($logo); $logoHeight = \imagesy($logo);
+                        $logoTargetWidth = $qrWidth * 0.22;
+                        $logoTargetHeight = $logoHeight * ($logoTargetWidth / $logoWidth);
+                        $dstX = ($qrWidth - $logoTargetWidth) / 2;
+                        $dstY = ($qrHeight - $logoTargetHeight) / 2;
+                        \imagefilledrectangle($qrCodeImage, $dstX - 2, $dstY - 2, $dstX + $logoTargetWidth + 2, $dstY + $logoTargetHeight + 2, $white);
+                        \imagecopyresampled($qrCodeImage, $logo, $dstX, $dstY, 0, 0, $logoTargetWidth, $logoTargetHeight, $logoWidth, $logoHeight);
+                        \imagedestroy($logo);
+                    }
                 }
+                \imagecopy($image, $qrCodeImage, $qrX, $qrY, 0, 0, $qrSize, $qrSize);
+                \imagedestroy($qrCodeImage);
             }
-            \imagecopy($image, $qrCodeImage, $qrX, $qrY, 0, 0, $qrSize, $qrSize);
-            \imagedestroy($qrCodeImage);
         }
     }
-}
 
-    return response()->streamDownload(function () use ($image) {
-        \imagepng($image);
-        \imagedestroy($image);
-    }, "MyanRun_{$bibNumber}.png", ['Content-Type' => 'image/png']);
-}
+        return response()->streamDownload(function () use ($image) {
+            \imagepng($image);
+            \imagedestroy($image);
+        }, "MyanRun_{$bibNumber}.png", ['Content-Type' => 'image/png']);
+    }
     public function previewPDF($id) 
     {
         $data = $this->getTicketData($id);

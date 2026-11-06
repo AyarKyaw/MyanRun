@@ -125,7 +125,8 @@ class AthleteController extends Controller
         'gender'       => 'required',
         't_shirt_size' => 'required',
         'blood_type'   => 'required',
-        'nrc_number'   => 'nullable|required_if:nat_type,national|digits:6',
+        'exp'           => 'required',
+        'nrc_number'   => 'nullable|required_if:type,national|digits:6',
         'type'           => 'required|in:national,foreigner',
         'job_work'       => 'required_if:type,foreigner|nullable|string|max:255',
         'passport_image' => 'required_if:type,foreigner|nullable|image|mimes:jpeg,png,jpg,webp|dimensions:max_width=1920,max_height=1080|max:2048',
@@ -138,13 +139,23 @@ class AthleteController extends Controller
         $rules['friend_phone'] = 'required|digits_between:9,15'; 
     }
 
+    \Log::info('NRC SUBMIT DATA', [
+        'all' => $request->all(),
+        'nat_type' => $request->type,
+        'nationality' => $request->nationality,
+        'nrc_state' => $request->nrc_state,
+        'nrc_district' => $request->nrc_district,
+        'nrc_naing' => $request->nrc_naing,
+        'nrc_number' => $request->nrc_number,
+    ]);
+
     $request->validate($rules);
 
     // 3. Format Date
     $formattedDob = Carbon::createFromFormat('d/m/Y', $request->dob)->format('Y-m-d');
 
     // 4. Handle ID Number
-    $idNumber = ($request->nat_type === 'national') 
+    $idNumber = ($request->type === 'national') 
         ? "{$request->nrc_state}/{$request->nrc_district}({$request->nrc_naing})" . str_pad($request->nrc_number, 6, '0', STR_PAD_LEFT)
         : strtoupper($request->passport_id);
 
@@ -423,4 +434,641 @@ class AthleteController extends Controller
         // Returns resources/views/ticket/consent.blade.php
         return view('ticket.consent', compact('data', 'event'));
     }
+
+    public function editRegistration(Request $request, \App\Models\Event $event)
+{
+    $user = auth()->user();
+
+    $athlete = \App\Models\Athlete::where(
+        'runner_id',
+        $user->runner_id
+    )->first();
+
+    if (!$athlete) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Athlete profile not found.',
+        ], 404);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Master permission
+    |--------------------------------------------------------------------------
+    */
+    if (!$event->allow_athlete_edit) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Registration editing is disabled for this event.',
+        ], 403);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Find this athlete's registration
+    |--------------------------------------------------------------------------
+    */
+    $ticket = \App\Models\Ticket::where(
+        'athlete_id',
+        $athlete->id
+    )
+        ->where('event', $event->name)
+        ->where('status', '!=', 'rejected')
+        ->latest()
+        ->first();
+
+    if (!$ticket) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Registration not found for this event.',
+        ], 404);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Parse NRC / Passport
+    |--------------------------------------------------------------------------
+    */
+    $nrc = $this->parseNrcNumber($athlete->id_number);
+
+    $natType = $athlete->nat_type ?: 'national';
+
+    /*
+    |--------------------------------------------------------------------------
+    | Response
+    |--------------------------------------------------------------------------
+    */
+    return response()->json([
+        'success' => true,
+
+        'event' => [
+            'id' => $event->id,
+            'name' => $event->name,
+        ],
+
+        'permissions' => [
+            'required' => (bool) $event->allow_edit_required,
+            'personal' => (bool) $event->allow_edit_personal,
+            'contact' => (bool) $event->allow_edit_contact,
+            'participant' => (bool) $event->allow_edit_participant,
+        ],
+
+        'athlete' => [
+            'id' => $athlete->id,
+
+            'nat_type' => $natType,
+
+            'first_name' => $athlete->first_name,
+            'middle_name' => $athlete->middle_name,
+            'last_name' => $athlete->last_name,
+
+            /*
+            |--------------------------------------------------------------------------
+            | Original combined ID
+            |--------------------------------------------------------------------------
+            */
+            'id_number' => $athlete->id_number,
+
+            /*
+            |--------------------------------------------------------------------------
+            | Parsed NRC
+            |--------------------------------------------------------------------------
+            */
+            'nrc_state' => $nrc['state'],
+            'nrc_district' => $nrc['district'],
+            'nrc_naing' => $nrc['naing'],
+            'nrc_number' => $nrc['number'],
+
+            /*
+            |--------------------------------------------------------------------------
+            | Foreigner passport
+            |--------------------------------------------------------------------------
+            */
+            'passport_id' => $natType === 'foreigner'
+                ? $athlete->id_number
+                : '',
+
+            /*
+            |--------------------------------------------------------------------------
+            | Profile image
+            |--------------------------------------------------------------------------
+            */
+            'face_image_path' => $athlete->face_image_path,
+
+            'face_image_url' => $athlete->face_image_path
+                ? asset('storage/' . $athlete->face_image_path)
+                : null,
+
+            'father_name' => $athlete->father_name,
+            'dob' => $athlete->dob,
+            'nationality' => $athlete->nationality,
+            'gender' => $athlete->gender,
+            'state' => $athlete->state,
+            'address' => $athlete->address,
+
+            'viber' => $athlete->viber,
+            'contact' => $athlete->contact,
+
+            'blood_type' => $athlete->blood_type,
+
+            'has_medical_condition' =>
+                (bool) $athlete->has_medical_condition,
+
+            'medical_details' => $athlete->medical_details,
+
+            'job_work' => $athlete->job_work,
+        ],
+
+        'user' => [
+            'email' => $user->email,
+            'phone' => $user->phone,
+        ],
+
+        'ticket' => [
+            'id' => $ticket->id,
+
+            /*
+            |--------------------------------------------------------------------------
+            | Read-only
+            |--------------------------------------------------------------------------
+            */
+            'bib_number' => $ticket->bib_number,
+
+            /*
+            |--------------------------------------------------------------------------
+            | Editable participant information
+            |--------------------------------------------------------------------------
+            */
+            'bib_name' => $ticket->bib_name,
+            't_shirt_size' => $ticket->t_shirt_size,
+            'experience_level' => $ticket->experience_level,
+        ],
+    ]);
+}
+
+public function updateRegistration(
+    Request $request,
+    \App\Models\Event $event
+) {
+    $user = auth()->user();
+
+    $athlete = \App\Models\Athlete::where(
+        'runner_id',
+        $user->runner_id
+    )->first();
+
+    if (!$athlete) {
+        return back()->with(
+            'error',
+            'Athlete profile not found.'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Find registration
+    |--------------------------------------------------------------------------
+    */
+    $ticket = \App\Models\Ticket::where(
+        'athlete_id',
+        $athlete->id
+    )
+        ->where('event', $event->name)
+        ->where('status', '!=', 'rejected')
+        ->latest()
+        ->first();
+
+    if (!$ticket) {
+        return back()->with(
+            'error',
+            'Registration not found for this event.'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Master permission
+    |--------------------------------------------------------------------------
+    */
+    if (!$event->allow_athlete_edit) {
+        return back()->with(
+            'error',
+            'Registration editing is disabled for this event.'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | 01 — Required Information
+    |--------------------------------------------------------------------------
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Name + Profile Picture — Always Editable
+    |--------------------------------------------------------------------------
+    */
+
+    $validated = $request->validate([
+        'first_name' => [
+            'required',
+            'string',
+            'max:255',
+        ],
+
+        'middle_name' => [
+            'nullable',
+            'string',
+            'max:255',
+        ],
+
+        'last_name' => [
+            'required',
+            'string',
+            'max:255',
+        ],
+
+        'face_image' => [
+            'nullable',
+            'image',
+            'mimes:jpg,jpeg,png,webp',
+            'max:5120',
+        ],
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update Athlete
+    |--------------------------------------------------------------------------
+    */
+
+    $athlete->first_name =
+        $validated['first_name'];
+
+    $athlete->middle_name =
+        $validated['middle_name'] ?? null;
+
+    $athlete->last_name =
+        $validated['last_name'];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update User name too
+    |--------------------------------------------------------------------------
+    */
+
+    $user->first_name =
+        $validated['first_name'];
+
+    $user->middle_name =
+        $validated['middle_name'] ?? null;
+
+    $user->last_name =
+        $validated['last_name'];
+
+    $user->save();
+
+    /*
+    |--------------------------------------------------------------------------
+    | Profile Picture
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->hasFile('face_image')) {
+
+        $path = $request
+            ->file('face_image')
+            ->store(
+                'athletes/faces',
+                'public'
+            );
+
+        $athlete->face_image_path = $path;
+    }
+    if ($event->allow_edit_required) {
+
+        $validated = $request->validate([
+
+            'nat_type' => [
+                'required',
+                'in:national,foreigner',
+            ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | National NRC
+            |--------------------------------------------------------------------------
+            */
+            'nrc_state' => [
+                'required_if:nat_type,national',
+                'nullable',
+                'string',
+                'max:10',
+            ],
+
+            'nrc_district' => [
+                'required_if:nat_type,national',
+                'nullable',
+                'string',
+                'max:50',
+            ],
+
+            'nrc_naing' => [
+                'required_if:nat_type,national',
+                'nullable',
+                'string',
+                'max:20',
+            ],
+
+            'nrc_number' => [
+                'required_if:nat_type,national',
+                'nullable',
+                'digits:6',
+            ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | Foreigner passport
+            |--------------------------------------------------------------------------
+            */
+            'passport_id' => [
+                'required_if:nat_type,foreigner',
+                'nullable',
+                'string',
+                'max:15',
+            ],
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | National / Foreigner
+        |--------------------------------------------------------------------------
+        */
+        $athlete->nat_type = $validated['nat_type'];
+
+        if ($validated['nat_type'] === 'national') {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Rebuild NRC
+            |
+            | Example:
+            | 12/ကမန(နိုင်)123456
+            |--------------------------------------------------------------------------
+            */
+            $athlete->id_number =
+                $validated['nrc_state']
+                . '/'
+                . $validated['nrc_district']
+                . '('
+                . $validated['nrc_naing']
+                . ')'
+                . $validated['nrc_number'];
+
+        } else {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Passport
+            |--------------------------------------------------------------------------
+            */
+            $athlete->id_number =
+                strtoupper(
+                    trim($validated['passport_id'])
+                );
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | 02 — Personal Information
+    |--------------------------------------------------------------------------
+    */
+    if ($event->allow_edit_personal) {
+
+        $validated = $request->validate([
+            'father_name' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'dob' => [
+                'required',
+                'date_format:d/m/Y',
+            ],
+
+            'gender' => [
+                'required',
+                'in:male,female',
+            ],
+
+            'nationality' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'state' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'address' => [
+                'nullable',
+                'string',
+            ],
+        ]);
+
+        $athlete->father_name =
+            $validated['father_name'] ?? null;
+
+        $athlete->dob =
+            \Carbon\Carbon::createFromFormat(
+                'd/m/Y',
+                $validated['dob']
+            )->format('Y-m-d');
+
+        $athlete->gender =
+            $validated['gender'];
+
+        $athlete->nationality =
+            $validated['nationality'];
+
+        $athlete->state =
+            $validated['state'] ?? null;
+
+        $athlete->address =
+            $validated['address'] ?? null;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | 03 — Contact Information
+    |--------------------------------------------------------------------------
+    */
+    if ($event->allow_edit_contact) {
+
+        $validated = $request->validate([
+            'viber' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'contact' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+        ]);
+
+        $athlete->viber =
+            $validated['viber'] ?? null;
+
+        $athlete->contact =
+            $validated['contact'] ?? null;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | 04 — Participant Information
+    |--------------------------------------------------------------------------
+    */
+    if ($event->allow_edit_participant) {
+
+        $validated = $request->validate([
+            'bib_name' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            't_shirt_size' => [
+                'nullable',
+                'string',
+                'max:50',
+            ],
+
+            'experience_level' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'blood_type' => [
+                'nullable',
+                'string',
+                'max:50',
+            ],
+
+            'has_medical_condition' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'medical_details' => [
+                'nullable',
+                'string',
+            ],
+
+            'job_work' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | IMPORTANT:
+        | bib_number is NEVER updated.
+        |--------------------------------------------------------------------------
+        */
+        $ticket->bib_name =
+            $validated['bib_name'] ?? null;
+
+        $ticket->t_shirt_size =
+            $validated['t_shirt_size'] ?? null;
+
+        $ticket->experience_level =
+            $validated['experience_level'] ?? null;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Athlete participant information
+        |--------------------------------------------------------------------------
+        */
+        $athlete->blood_type =
+            $validated['blood_type'] ?? null;
+
+        $athlete->has_medical_condition =
+            $request->boolean(
+                'has_medical_condition'
+            );
+
+        $athlete->medical_details =
+            $validated['medical_details'] ?? null;
+
+        $athlete->job_work =
+            $validated['job_work'] ?? null;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Save
+    |--------------------------------------------------------------------------
+    */
+    $athlete->save();
+
+    $ticket->save();
+
+    return redirect()
+        ->route('user.dashboard')
+        ->with(
+            'success',
+            'Your registration has been updated successfully.'
+        );
+}
+
+private function parseNrcNumber(?string $idNumber): array
+{
+    if (!$idNumber) {
+        return [
+            'state' => '',
+            'district' => '',
+            'naing' => '',
+            'number' => '',
+        ];
+    }
+
+    $idNumber = trim($idNumber);
+
+    /*
+    |--------------------------------------------------------------------------
+    | National NRC
+    | Example: 12/ကမန(နိုင်)123456
+    |--------------------------------------------------------------------------
+    */
+    if (preg_match(
+        '/^(\d+)\/([^\(]+)\(([^)]+)\)(\d{6})$/u',
+        $idNumber,
+        $matches
+    )) {
+        return [
+            'state' => $matches[1],
+            'district' => trim($matches[2]),
+            'naing' => trim($matches[3]),
+            'number' => $matches[4],
+        ];
+    }
+
+    return [
+        'state' => '',
+        'district' => '',
+        'naing' => '',
+        'number' => '',
+    ];
+}
 }

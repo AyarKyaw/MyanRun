@@ -21,6 +21,11 @@ class Event extends Model
         'video_url', 
         'description', 
         'early_bird_limit', 
+        'allow_athlete_edit', 
+        'allow_edit_required', 
+        'allow_edit_personal', 
+        'allow_edit_contact', 
+        'allow_edit_participant',
     ];
 
     /**
@@ -48,6 +53,12 @@ class Event extends Model
 
     protected $casts = [
         'date' => 'date',
+
+        'allow_athlete_edit' => 'boolean', 
+        'allow_edit_required' => 'boolean', 
+        'allow_edit_personal' => 'boolean', 
+        'allow_edit_contact' => 'boolean', 
+        'allow_edit_participant' => 'boolean',
     ];
 
     public function registrations()

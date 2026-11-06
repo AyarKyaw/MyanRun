@@ -239,6 +239,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/ticket/preview/{id}', [TicketController::class, 'previewPDF'])->name('ticket.preview');
     Route::post('/athlete/verify-friend', [AthleteController::class, 'verifyFriend'])
     ->name('athlete.verify.friend');
+    Route::get('/athlete/registration/{event}/edit', [AthleteController::class, 'editRegistration'])
+        ->name('athlete.registration.edit');
+
+    Route::put('/athlete/registration/{event}', [AthleteController::class, 'updateRegistration'])
+        ->name('athlete.registration.update');
     });
     
 Route::get('/ticket/download/{id}', [TicketController::class, 'downloadPNG'])->name('ticket.download');
@@ -246,6 +251,7 @@ Route::get('/ticket/download/{id}', [TicketController::class, 'downloadPNG'])->n
 Route::middleware(['auth:admin,agent'])->group(function () {
 Route::get('/tickets/export/excel', [TicketController::class, 'exportExcel'])->name('dashboard.tickets.export');
 Route::get('/events/ticket/{event}', [TicketController::class, 'dashboard'])->name('dashboard.events.ticket');
+
 });
 /*
 |--------------------------------------------------------------------------

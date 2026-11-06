@@ -130,6 +130,11 @@ class EventController extends Controller
             'tickets.*.early_bird_limit'    => 'nullable|integer|min:0',
             'tickets.*.early_bird_discount' => 'nullable|numeric|min:0',
             'tickets.*.has_gender_bib'      => 'nullable|boolean',
+            'allow_athlete_edit'      => 'nullable|boolean',
+            'allow_edit_required'     => 'nullable|boolean',
+            'allow_edit_personal'     => 'nullable|boolean',
+            'allow_edit_contact'      => 'nullable|boolean',
+            'allow_edit_participant'  => 'nullable|boolean',
             
             'admin_ids' => 'nullable|array' 
         ]);
@@ -143,6 +148,11 @@ class EventController extends Controller
             $event->video_url   = $request->video_url;
             $event->description = $request->description;
             $event->is_active   = $request->is_active;
+            $event->allow_athlete_edit     = $request->boolean('allow_athlete_edit');
+            $event->allow_edit_required    = $request->boolean('allow_edit_required');
+            $event->allow_edit_personal    = $request->boolean('allow_edit_personal');
+            $event->allow_edit_contact     = $request->boolean('allow_edit_contact');
+            $event->allow_edit_participant = $request->boolean('allow_edit_participant');
 
             // Global Limit Logic
             $event->total_max_slots = ($request->ticket_limit_type === 'limited') 
@@ -258,7 +268,12 @@ class EventController extends Controller
             'early_bird_limit' => 'nullable|integer|min:0', 
             'image'            => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'tickets'          => 'nullable|array',
-            'admin_ids'        => 'nullable|array' // Added validation for admins
+            'admin_ids'        => 'nullable|array', // Added validation for admins
+            'allow_athlete_edit'      => 'nullable|boolean',
+            'allow_edit_required'     => 'nullable|boolean',
+            'allow_edit_personal'     => 'nullable|boolean',
+            'allow_edit_contact'      => 'nullable|boolean',
+            'allow_edit_participant'  => 'nullable|boolean',
         ]);
 
         // Update Event Details
@@ -270,6 +285,19 @@ class EventController extends Controller
         $event->video_url        = $request->video_url;
         $event->description      = $request->description;
         $event->early_bird_limit = $request->early_bird_limit ?? 0;
+        $event->allow_athlete_edit = $request->boolean('allow_athlete_edit');
+
+        if ($event->allow_athlete_edit) {
+            $event->allow_edit_required    = $request->boolean('allow_edit_required');
+            $event->allow_edit_personal    = $request->boolean('allow_edit_personal');
+            $event->allow_edit_contact     = $request->boolean('allow_edit_contact');
+            $event->allow_edit_participant = $request->boolean('allow_edit_participant');
+        } else {
+            $event->allow_edit_required    = false;
+            $event->allow_edit_personal    = false;
+            $event->allow_edit_contact     = false;
+            $event->allow_edit_participant = false;
+        }
 
         if ($request->ticket_limit_type === 'unlimited') {
             $event->total_max_slots = null;

@@ -763,7 +763,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (downloadBtn) {
                 if (isApproved && isAdmin) {
                     downloadBtn.classList.remove('d-none'); // Show button
-                    downloadBtn.href = `/dashboard/tickets/download/${data.id}`;
+                    downloadBtn.href = `/ticket/download/${data.id}`;
                 } else {
                     downloadBtn.classList.add('d-none'); // Hide button
                 }

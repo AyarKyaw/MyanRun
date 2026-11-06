@@ -34,7 +34,7 @@ class TicketSheetExport implements FromCollection, WithTitle, WithHeadings, Shou
 
     public function headings(): array
     {
-        return ['Ticket ID', 'Email', 'Full Name','First Name','Middle Name','Last Name', 'BIB Name', 'BIB Number', 'ID No.', 'Phone no.', "Date of Birth", 'Gender', 'Category', 'T-Shirt size', 'Blood Type', 'Price', 'Status', 'Is Printed', 'Purchase Date', 'Division', 'Nationality', 'Address', 'ITRA'];
+        return ['Ticket ID', 'Email', 'Full Name','First Name','Middle Name','Last Name', 'BIB Name', 'BIB Number', 'NRC', 'Phone no.', "Date of Birth", 'Gender', 'Category', 'T-Shirt size', 'Blood Type', 'Price', 'Status', 'Is Printed', 'Purchase Date', 'Division', 'Nationality', 'Address', 'ITRA'];
     }
 
     public function collection()

@@ -87,9 +87,9 @@
                                 </div><div class="address">
                                 <div class="contact-numbers">
                                     @php
-                                        // Decode the JSON phone field. Fallback to defaults if empty.
-                                        $phones = json_decode($global_info->phone_numbers, true) ?: ['09 540 5026', '09 513 5324'];
-                                    @endphp
+    $phones = json_decode($global_info->phone_numbers ?? '[]', true)
+        ?: ['09 540 5026', '09 513 5324'];
+@endphp
 
                                     @foreach($phones as $phone)
                                         <a href="tel:{{ preg_replace('/[^0-9+]/', '', $phone) }}">

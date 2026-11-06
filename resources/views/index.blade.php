@@ -359,7 +359,7 @@
     
     <div class="marathon-event-1 text-center" style="margin-bottom: 30px;">
     <h2 style="font-size: 2rem; font-weight: 800; text-transform: uppercase; color: #1e293b; margin-bottom: 10px;">
-        Cherry Trail <span style="color: #C3E92D;">RUN</span> 2026
+        Bagan <span style="color: #C3E92D;">Marathon</span> 2026
     </h2>
     <div class="marathon-countdown" style="padding-top: 0; padding-bottom: 0;">
         <div class="countdown-line">
@@ -375,23 +375,6 @@
 </div>
 
 <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 40px 0;">
-
-<div class="marathon-event-2 text-center">
-    <h2 style="font-size: 2rem; font-weight: 800; text-transform: uppercase; color: #1e293b; margin-bottom: 10px;">
-        Alaingni Monsoon <span style="color: #C3E92D;">Duathlon </span> 2026
-    </h2>
-    <div class="marathon-countdown" style="padding-top: 0; padding-bottom: 0;">
-        <div class="countdown-line">
-            <span><strong class="days">00</strong> Days</span>
-            <span class="separator">:</span>
-            <span><strong class="hours">00</strong> Hours</span>
-            <span class="separator">:</span>
-            <span><strong class="minutes">00</strong> Minutes</span>
-            <span class="separator">:</span>
-            <span><strong class="seconds">00</strong> Seconds</span>
-        </div>
-    </div>
-</div>
     
     
     <!-- Widget-about -->
@@ -982,7 +965,8 @@
     <div class="address">
     {{-- Decode JSON phone numbers --}}
     @php
-        $phones = json_decode($global_info->phone_numbers, true) ?: ['09 540 5026', '09 513 5324'];
+        $phones = json_decode($global_info->phone_numbers ?? '[]', true)
+            ?: ['09 540 5026', '09 513 5324'];
     @endphp
 
     {{-- Loop through phone numbers --}}
@@ -1726,8 +1710,9 @@
     <div class="address">
     {{-- Decode JSON phone numbers --}}
     @php
-        $phones = json_decode($global_info->phone_numbers, true) ?: ['09 540 5026', '09 513 5324'];
-    @endphp
+    $phones = json_decode($global_info->phone_numbers ?? '[]', true)
+        ?: ['09 540 5026', '09 513 5324'];
+@endphp
 
     {{-- Loop through phone numbers --}}
     @foreach($phones as $phone)
@@ -2173,8 +2158,7 @@
 
     // Initialize Countdown instances
     document.addEventListener("DOMContentLoaded", function() {
-        initializeCountdown("May 2, 2026 05:00:00", ".marathon-event-1");
-        initializeCountdown("May 24, 2026 06:00:00", ".marathon-event-2");
+        initializeCountdown("November 22, 2026 05:00:00", ".marathon-event-1");
     });
 
     // 4. Swiper Initialization

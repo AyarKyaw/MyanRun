@@ -89,6 +89,8 @@
                     </div>
                 </div>
 
+                
+
                 <div class="col-xl-4">
                     <div class="card">
                         <div class="card-body">
@@ -99,6 +101,90 @@
                                     <option value="1" {{ $event->is_active == 1 ? 'selected' : '' }}>Now Event (Live)</option>
                                     <option value="0" {{ $event->is_active == 0 ? 'selected' : '' }}>Past Event (Archived)</option>
                                 </select>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label text-black fw-bold">Athlete Registration Editing</label>
+
+                                <div class="border rounded p-3 bg-light">
+                                    <div class="form-check form-switch mb-3">
+                                        <input
+                                            class="form-check-input"
+                                            type="checkbox"
+                                            name="allow_athlete_edit"
+                                            value="1"
+                                            id="allow_athlete_edit"
+                                            {{ old('allow_athlete_edit', $event->allow_athlete_edit) ? 'checked' : '' }}
+                                        >
+                                        <label class="form-check-label fw-bold" for="allow_athlete_edit">
+                                            Allow athletes to edit registration
+                                        </label>
+                                    </div>
+
+                                    <div id="athlete-edit-sections"
+                                        class="{{ old('allow_athlete_edit', $event->allow_athlete_edit) ? '' : 'd-none' }}">
+
+                                        <small class="text-muted d-block mb-2">
+                                            Select which registration sections athletes can edit.
+                                        </small>
+
+                                        <div class="form-check mb-2">
+                                            <input
+                                                class="form-check-input athlete-edit-section"
+                                                type="checkbox"
+                                                name="allow_edit_required"
+                                                value="1"
+                                                id="allow_edit_required"
+                                                {{ old('allow_edit_required', $event->allow_edit_required) ? 'checked' : '' }}
+                                            >
+                                            <label class="form-check-label" for="allow_edit_required">
+                                                <strong>01</strong> — Required Information
+                                            </label>
+                                        </div>
+
+                                        <div class="form-check mb-2">
+                                            <input
+                                                class="form-check-input athlete-edit-section"
+                                                type="checkbox"
+                                                name="allow_edit_personal"
+                                                value="1"
+                                                id="allow_edit_personal"
+                                                {{ old('allow_edit_personal', $event->allow_edit_personal) ? 'checked' : '' }}
+                                            >
+                                            <label class="form-check-label" for="allow_edit_personal">
+                                                <strong>02</strong> — Personal Information
+                                            </label>
+                                        </div>
+
+                                        <div class="form-check mb-2">
+                                            <input
+                                                class="form-check-input athlete-edit-section"
+                                                type="checkbox"
+                                                name="allow_edit_contact"
+                                                value="1"
+                                                id="allow_edit_contact"
+                                                {{ old('allow_edit_contact', $event->allow_edit_contact) ? 'checked' : '' }}
+                                            >
+                                            <label class="form-check-label" for="allow_edit_contact">
+                                                <strong>03</strong> — Contact Information
+                                            </label>
+                                        </div>
+
+                                        <div class="form-check">
+                                            <input
+                                                class="form-check-input athlete-edit-section"
+                                                type="checkbox"
+                                                name="allow_edit_participant"
+                                                value="1"
+                                                id="allow_edit_participant"
+                                                {{ old('allow_edit_participant', $event->allow_edit_participant) ? 'checked' : '' }}
+                                            >
+                                            <label class="form-check-label" for="allow_edit_participant">
+                                                <strong>04</strong> — Participant's Info
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="mb-4">
@@ -232,6 +318,33 @@
 
 <script>
 let ticketIndex = {{ $event->ticketTypes->count() }};
+
+document.addEventListener('DOMContentLoaded', function () {
+    const masterToggle = document.getElementById('allow_athlete_edit');
+    const sections = document.getElementById('athlete-edit-sections');
+    const sectionCheckboxes = document.querySelectorAll('.athlete-edit-section');
+
+    function updateAthleteEditSections() {
+        if (masterToggle.checked) {
+            sections.classList.remove('d-none');
+
+            sectionCheckboxes.forEach(function (checkbox) {
+                checkbox.disabled = false;
+            });
+        } else {
+            sections.classList.add('d-none');
+
+            sectionCheckboxes.forEach(function (checkbox) {
+                checkbox.disabled = true;
+                checkbox.checked = false;
+            });
+        }
+    }
+
+    masterToggle.addEventListener('change', updateAthleteEditSections);
+
+    updateAthleteEditSections();
+});
 
 function addTicket() {
     const container = document.getElementById('ticket-types');

@@ -291,7 +291,7 @@
             @if($type == 'national')
             <div id="nrc_container" class="grid grid-cols-1 md:grid-cols-4 gap-2">
                 <select name="nrc_state" id="nrc_state" class="input-field !py-3 !text-sm" required>
-                    <option value="">State</option>
+                    <option value="" disabled>State</option>
                     <option value="1">၁/</option> <option value="2">၂/</option>
                     <option value="3">၃/</option> <option value="4">၄/</option>
                     <option value="5">၅/</option> <option value="6">၆/</option>
@@ -302,10 +302,11 @@
                 </select>
 
                 <select name="nrc_district" id="nrc_district" class="input-field !py-3 !text-sm" required>
-                    <option value="">District</option>
+                    <option value="" disabled>District</option>
                 </select>
 
                 <select name="nrc_naing" class="input-field !py-3 !text-sm" required>
+                    <option value="" disabled>Town</option>
                     <option value="နိုင်">နိုင်</option>
                     <option value="ဧည့်">ဧည့်</option>
                     <option value="စ">စ</option>
@@ -427,6 +428,7 @@
                     <div>
                         <label class="label-text">Gender</label>
                         <select name="gender" id="gender_select" class="input-field" onchange="updateBib()">
+                            <option value="" selected disabled>Select Gender</option>
                             <option value="male" {{ old('gender', $athlete->gender ?? 'male') == 'male' ? 'selected' : '' }}>Male</option>
                             <option value="female" {{ old('gender', $athlete->gender ?? 'male') == 'female' ? 'selected' : '' }}>Female</option>
                         </select>
@@ -513,6 +515,7 @@
                     <div>
                         <label class="label-text">T Shirt Size</label>
                         <select name="t_shirt_size" class="input-field">
+                            <option value="" selected disabled>Select T Shirt Size</option>
                             <option value="XS">XS</option>
                             <option value="S">S</option>
                             <option value="M">M</option>
@@ -526,6 +529,7 @@
                     <div>
                         <label class="label-text">Experience</label>
                         <select name="exp" class="input-field">
+                            <option value="" selected disabled>Select Experience</option>
                             <option value="Never">Never</option>
                             <option value="25KM">Within 25KM</option>
                             <option value="25KM-50KM">Within 25KM and 50KM</option>
@@ -535,6 +539,7 @@
                     <div>
                         <label class="label-text">Blood Type</label>
                         <select name="blood_type" class="input-field">
+                            <option value="" selected disabled>Select Blood Type</option>
                             <option value="O">O</option>
                             <option value="A">A</option>
                             <option value="B">B</option>
