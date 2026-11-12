@@ -366,7 +366,7 @@
                         </span>
 
                         <span class="text-[11px] font-bold text-brandDark uppercase tracking-widest">
-                            {{ $athlete?->id_number ?? 'NRC Needed' }}
+                            {{ $athlete?->id_number ?: 'NRC Needed' }}
                         </span>
 
                     </div>
