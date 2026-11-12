@@ -365,7 +365,10 @@
                             {{ $fullName }}
                         </span>
 
-                        <span class="text-[11px] font-bold text-brandDark uppercase tracking-widest">
+                        <span
+                            class="text-[11px] font-bold text-brandDark uppercase tracking-widest cursor-pointer"
+                            onclick="openProfileModal()"
+                        >
                             {{ $athlete?->id_number ?: 'NRC Needed' }}
                         </span>
 
